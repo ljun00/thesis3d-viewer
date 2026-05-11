@@ -3,98 +3,154 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mesh Viewer</title>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three":         "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-
+  <title>3D Mesh Viewer</title>
   <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
     :root {
-      --bg:      #080a09;
-      --panel:   #0e1210;
-      --border:  #1e2420;
-      --muted:   #3a4840;
-      --dim:     #5a6e60;
-      --text:    #c8d8cc;
-      --accent:  #4ec98a;
-      --accentd: #2a7a52;
-      --warn:    #d4a840;
+      --bg:     #0a0c0b;
+      --panel:  #0e1210;
+      --border: #1e2420;
+      --muted:  #3a4840;
+      --dim:    #5a7060;
+      --text:   #c8d8cc;
+      --accent: #4ec98a;
+      --adk:    #2a7a52;
     }
-    body { background:var(--bg); color:var(--text); font-family:'Courier New',monospace; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
 
-    /* Header */
-    #header { height:46px; padding:0 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); background:var(--panel); flex-shrink:0; z-index:20; }
-    .logo { font-size:11px; letter-spacing:.22em; color:var(--dim); }
-    .logo b { color:var(--accent); font-weight:normal; }
-    #hdr-file { font-size:11px; color:var(--muted); letter-spacing:.08em; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    #saved-badge { font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accentd); padding:3px 9px; opacity:0; transition:opacity .3s; }
-    #saved-badge.show { opacity:1; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
 
-    /* Scene */
-    #scene-wrap { flex:1; position:relative; overflow:hidden; }
-    #three-canvas { display:block; width:100% !important; height:100% !important; }
-    body.orient-mode          #three-canvas { cursor:crosshair; }
-    body.orient-mode.rotating #three-canvas { cursor:grab; }
-    body.orient-mode.panning  #three-canvas { cursor:move; }
+    /* ── HEADER ──────────────────────────────────────────────── */
+    #header {
+      height: 46px; padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--panel); border-bottom: 1px solid var(--border);
+      flex-shrink: 0; z-index: 20;
+    }
+    .logo   { font-size: 11px; letter-spacing: 0.22em; color: var(--dim); }
+    .logo b { color: var(--accent); font-weight: normal; }
+    #hdr-file { font-size: 11px; color: var(--muted); max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hint-txt { font-size: 10px; color: var(--border); letter-spacing: 0.1em; }
 
-    /* Drop zone */
-    #drop-zone { position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:13px; background:var(--bg); }
-    #drop-zone.hidden { display:none; }
-    #drop-zone.over   { outline:2px dashed var(--accentd); outline-offset:-14px; background:#080f0b; }
-    .dz-sym   { font-size:30px; color:var(--border); }
-    .dz-title { font-size:11px; letter-spacing:.2em; color:var(--muted); }
-    .dz-sub   { font-size:10px; color:var(--border); }
-    .browse-btn { margin-top:4px; padding:9px 26px; border:1px solid var(--muted); background:transparent; color:var(--dim); font-family:'Courier New',monospace; font-size:10px; letter-spacing:.14em; cursor:pointer; transition:all .2s; }
-    .browse-btn:hover { border-color:var(--accent); color:var(--accent); }
+    /* ── SCENE ───────────────────────────────────────────────── */
+    #wrap { flex: 1; position: relative; overflow: hidden; }
+    #canvas { display: block; width: 100% !important; height: 100% !important; }
 
-    /* Loading */
-    #loading { position:absolute; inset:0; z-index:11; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:var(--bg); }
-    #loading.hidden { display:none; }
-    .ld-msg   { font-size:11px; letter-spacing:.18em; color:var(--dim); }
-    .ld-prog  { font-size:10px; color:var(--muted); min-height:14px; }
-    .ld-track { width:200px; height:1px; background:var(--border); }
-    .ld-bar   { height:100%; background:var(--accent); width:0; transition:width .25s; }
+    /* ── DROP ZONE ───────────────────────────────────────────── */
+    #dropzone {
+      position: absolute; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      background: var(--bg);
+    }
+    #dropzone.hidden { display: none; }
+    #dropzone.over {
+      background: #080f0b;
+      outline: 2px dashed var(--adk); outline-offset: -14px;
+    }
+    .dz-icon  { font-size: 36px; color: var(--border); }
+    .dz-title { font-size: 12px; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; }
+    .dz-sub   { font-size: 10px; color: var(--border); letter-spacing: 0.08em; }
+    #dz-note  { font-size: 10px; color: var(--muted); }
 
-    /* Orient banner */
-    #orient-banner { position:absolute; top:0; left:0; right:0; z-index:16; padding:10px 18px; background:rgba(10,16,12,0.97); border-bottom:1px solid var(--accentd); display:none; flex-direction:column; gap:9px; backdrop-filter:blur(4px); }
-    #orient-banner.show { display:flex; }
-    .ob-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-    .ob-title { font-size:10px; letter-spacing:.2em; color:var(--accent); text-transform:uppercase; flex-shrink:0; }
-    .hints { display:flex; gap:8px; flex-wrap:wrap; }
-    .hint-pill { padding:3px 10px; border:1px solid var(--border); font-size:9px; letter-spacing:.08em; color:var(--muted); display:flex; align-items:center; gap:5px; }
-    .hint-pill kbd { background:var(--border); color:var(--dim); padding:1px 5px; font-family:'Courier New',monospace; font-size:9px; }
-    .ob-vals { display:flex; gap:14px; margin-left:auto; flex-wrap:wrap; }
-    .ob-val  { font-size:10px; color:var(--muted); white-space:nowrap; }
-    .ob-val span { color:var(--accent); display:inline-block; min-width:44px; text-align:right; }
-    .ob-actions { display:flex; gap:7px; flex-wrap:wrap; }
-    .ob-btn { padding:5px 14px; border:1px solid var(--muted); background:transparent; color:var(--dim); font-family:'Courier New',monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer; transition:all .15s; white-space:nowrap; }
-    .ob-btn:hover { border-color:var(--accent); color:var(--accent); }
-    .ob-btn.save-btn { border-color:var(--accent); color:var(--accent); background:rgba(78,201,138,0.07); }
-    .ob-btn.save-btn:hover { background:rgba(78,201,138,0.15); }
-    .ob-btn.center-btn { border-color:var(--warn); color:var(--warn); }
-    .ob-btn.center-btn:hover { background:rgba(212,168,64,0.1); }
+    .fmt-badges { display: flex; gap: 8px; }
+    .badge     { padding: 3px 12px; border: 1px solid var(--muted); font-size: 10px; letter-spacing: 0.14em; color: var(--dim); }
+    .badge.glb { border-color: var(--accent); color: var(--accent); }
 
-    /* Toolbar */
-    #toolbar { position:absolute; top:14px; right:16px; display:none; flex-direction:column; gap:7px; z-index:12; }
-    .tbtn { width:38px; height:38px; background:rgba(14,18,16,0.9); backdrop-filter:blur(4px); border:1px solid var(--border); color:var(--muted); font-family:'Courier New',monospace; font-size:10px; letter-spacing:.06em; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; }
-    .tbtn:hover { border-color:var(--accentd); color:var(--text); }
-    .tbtn.on    { border-color:var(--accent); color:var(--accent); background:rgba(78,201,138,0.08); }
+    .browse-btn {
+      margin-top: 4px; padding: 9px 28px;
+      border: 1px solid var(--muted); background: transparent;
+      color: var(--dim); font-family: 'Courier New', monospace;
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .browse-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Stats */
-    #stats { position:absolute; bottom:0; left:0; right:0; padding:10px 18px; display:none; gap:20px; flex-wrap:wrap; align-items:center; background:linear-gradient(transparent, rgba(8,10,9,0.96)); font-size:10px; color:var(--muted); letter-spacing:.1em; pointer-events:none; }
-    #stats b { color:var(--dim); font-weight:normal; }
+    /* ── LOADING ─────────────────────────────────────────────── */
+    #loading {
+      position: absolute; inset: 0; z-index: 11;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      background: var(--bg);
+    }
+    #loading.hidden { display: none; }
+    #ld-msg   { font-size: 11px; letter-spacing: 0.18em; color: var(--dim); }
+    #ld-prog  { font-size: 10px; color: var(--muted); min-height: 14px; }
+    #ld-track { width: 220px; height: 1px; background: var(--border); }
+    #ld-bar   { height: 100%; background: var(--accent); width: 0; transition: width 0.25s; }
+    #ld-error {
+      display: none; font-size: 11px; color: #e06060;
+      border: 1px solid #5a2020; background: #1a0a0a;
+      padding: 10px 18px; max-width: 400px;
+      text-align: center; line-height: 1.7;
+    }
 
-    /* Toast */
-    #toast { position:absolute; top:60px; left:50%; transform:translateX(-50%); padding:8px 20px; background:var(--panel); border:1px solid var(--accentd); color:var(--accent); font-size:10px; letter-spacing:.16em; pointer-events:none; z-index:30; opacity:0; transition:opacity .2s; white-space:nowrap; }
-    #toast.show { opacity:1; }
-    #file-input { display:none; }
+    /* ── TOOLBAR ─────────────────────────────────────────────── */
+    #toolbar {
+      position: absolute; top: 14px; right: 16px;
+      display: none; flex-direction: column; gap: 7px; z-index: 12;
+    }
+    .tbtn {
+      width: 38px; height: 38px;
+      background: rgba(14,18,16,0.92); backdrop-filter: blur(4px);
+      border: 1px solid var(--border); color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: 10px; letter-spacing: 0.06em; cursor: pointer;
+      transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tbtn:hover { border-color: var(--adk); color: var(--text); }
+    .tbtn.on    { border-color: var(--accent); color: var(--accent); background: rgba(78,201,138,0.08); }
+
+    /* ── BRIGHTNESS SLIDER ───────────────────────────────────── */
+    #brightness-panel {
+      position: absolute; bottom: 52px; right: 16px;
+      display: none;
+      flex-direction: column; gap: 7px;
+      background: rgba(14,18,16,0.95); backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      padding: 12px 14px; z-index: 13;
+      min-width: 180px;
+    }
+    #brightness-panel.show { display: flex; }
+    .bp-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+    .bp-row   { display: flex; align-items: center; gap: 10px; }
+    .bp-name  { font-size: 10px; color: var(--dim); width: 60px; }
+    .bp-slider { flex: 1; accent-color: var(--accent); cursor: pointer; }
+    .bp-val   { font-size: 10px; color: var(--accent); width: 28px; text-align: right; }
+
+    /* ── STATS ───────────────────────────────────────────────── */
+    #stats {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 10px 18px;
+      display: none; gap: 20px; flex-wrap: wrap; align-items: center;
+      background: linear-gradient(transparent, rgba(8,10,9,0.96));
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.1em; pointer-events: none;
+    }
+    #stats b { color: var(--dim); font-weight: normal; }
+    #stat-fmt { padding: 2px 8px; font-size: 9px; letter-spacing: 0.14em; border: 1px solid var(--border); color: var(--dim); }
+    #stat-fmt.glb { border-color: var(--accent); color: var(--accent); }
+
+    /* ── TOAST ───────────────────────────────────────────────── */
+    #toast {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      padding: 8px 20px; background: var(--panel); border: 1px solid var(--adk);
+      color: var(--accent); font-size: 10px; letter-spacing: 0.14em;
+      pointer-events: none; z-index: 30;
+      opacity: 0; transition: opacity 0.2s; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+
+    #file-input { display: none; }
   </style>
 </head>
 <body>
@@ -102,448 +158,523 @@
   <div id="header">
     <div class="logo">3D <b>MESH VIEWER</b></div>
     <div id="hdr-file">no model loaded</div>
-    <div id="saved-badge">✓ position saved</div>
+    <div class="hint-txt">drag · scroll · right-drag pan</div>
   </div>
 
-  <div id="scene-wrap">
-    <canvas id="three-canvas"></canvas>
+  <div id="wrap">
+    <canvas id="canvas"></canvas>
 
-    <div id="drop-zone">
-      <div class="dz-sym">◈</div>
-      <div class="dz-title">Drag & Drop .ply file here</div>
-      <div class="dz-sub" id="url-note"></div>
-      <label class="browse-btn">Browse file <input type="file" id="file-input" accept=".ply" /></label>
+    <!-- Drop zone -->
+    <div id="dropzone">
+      <div class="dz-icon">◈</div>
+      <div class="dz-title">Drag & drop your 3D file here</div>
+      <div class="fmt-badges">
+        <div class="badge glb">GLB</div>
+        <div class="badge">GLTF</div>
+        <div class="badge">PLY</div>
+      </div>
+      <div class="dz-sub">or click the button below to browse</div>
+      <div id="dz-note"></div>
+      <label class="browse-btn">Browse file
+        <input type="file" id="file-input" accept=".glb,.gltf,.ply" />
+      </label>
     </div>
 
+    <!-- Loading -->
     <div id="loading" class="hidden">
-      <div class="ld-msg" id="ld-msg">Loading…</div>
-      <div class="ld-prog" id="ld-prog"></div>
-      <div class="ld-track"><div class="ld-bar" id="ld-bar"></div></div>
+      <div id="ld-msg">Loading…</div>
+      <div id="ld-prog"></div>
+      <div id="ld-track"><div id="ld-bar"></div></div>
+      <div id="ld-error"></div>
     </div>
 
-    <div id="orient-banner">
-      <div class="ob-row">
-        <div class="ob-title">⟳ Positioning Mode</div>
-        <div class="hints">
-          <div class="hint-pill"><kbd>Drag</kbd> Rotate model</div>
-          <div class="hint-pill"><kbd>Shift</kbd> + <kbd>Drag</kbd> Move up / down / left / right</div>
-          <div class="hint-pill"><kbd>Esc</kbd> Exit</div>
-        </div>
-        <div class="ob-vals">
-          <div class="ob-val">RX <span id="rv-x">0°</span></div>
-          <div class="ob-val">RY <span id="rv-y">0°</span></div>
-          <div class="ob-val">Y pos <span id="pv-y">0.00</span></div>
-        </div>
-      </div>
-      <div class="ob-row">
-        <div class="ob-actions">
-          <button class="ob-btn center-btn" id="ob-center">Place on Grid</button>
-          <button class="ob-btn" id="ob-reset">Reset</button>
-          <button class="ob-btn save-btn" id="ob-save">💾 Save Position (Permanent)</button>
-          <button class="ob-btn" id="ob-copy">Copy Code Values</button>
-          <button class="ob-btn" id="ob-exit">Done ✓</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- Toolbar -->
     <div id="toolbar">
-      <button class="tbtn" id="btn-orient" title="Position model">POS</button>
-      <button class="tbtn" id="btn-wf"     title="Toggle wireframe">WF</button>
-      <button class="tbtn" id="btn-rst"    title="Reset camera">⌂</button>
-      <button class="tbtn" id="btn-clr"    title="Toggle vertex color">CLR</button>
-      <button class="tbtn" id="btn-new"    style="font-size:8px" title="New file">NEW</button>
+      <button class="tbtn" id="btn-wf"  title="Toggle wireframe">WF</button>
+      <button class="tbtn" id="btn-cam" title="Reset camera view">⌂</button>
+      <button class="tbtn" id="btn-clr" title="Toggle solid / original color">CLR</button>
+      <button class="tbtn" id="btn-brt" title="Adjust brightness">☀</button>
+      <button class="tbtn" id="btn-new" title="Load a different file" style="font-size:8px;">NEW</button>
     </div>
 
+    <!-- Brightness panel -->
+    <div id="brightness-panel">
+      <div class="bp-label">Brightness</div>
+      <div class="bp-row">
+        <div class="bp-name">Exposure</div>
+        <input type="range" class="bp-slider" id="sl-exposure" min="0.2" max="5" step="0.1" value="1.8" />
+        <div class="bp-val" id="val-exposure">1.8</div>
+      </div>
+      <div class="bp-row">
+        <div class="bp-name">Ambient</div>
+        <input type="range" class="bp-slider" id="sl-ambient" min="0" max="5" step="0.1" value="1.5" />
+        <div class="bp-val" id="val-ambient">1.5</div>
+      </div>
+      <div class="bp-row">
+        <div class="bp-name">Sun</div>
+        <input type="range" class="bp-slider" id="sl-sun" min="0" max="8" step="0.1" value="2.5" />
+        <div class="bp-val" id="val-sun">2.5</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
     <div id="stats">
-      VERTICES <b id="sv">—</b> &nbsp;
-      FACES <b id="sf">—</b> &nbsp;
-      SIZE <b id="ss">—</b> &nbsp;
-      COLORS <b id="sc">—</b>
-      <span style="margin-left:auto;color:var(--border)">drag · scroll · right-drag pan</span>
+      <span id="stat-fmt">—</span>
+      VERTICES <b id="st-v">—</b>
+      &nbsp; FACES <b id="st-f">—</b>
+      &nbsp; SIZE <b id="st-s">—</b>
     </div>
 
     <div id="toast"></div>
   </div>
 
   <script type="module">
-    import * as THREE        from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { PLYLoader }     from 'three/addons/loaders/PLYLoader.js';
+    import * as THREE        from 'https://esm.sh/three@0.160.0';
+    import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader }    from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+    import { PLYLoader }     from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/PLYLoader.js';
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ★  CONFIGURATION — edit these lines before uploading to GitHub  ★
-    // ═══════════════════════════════════════════════════════════════════
-
-    // URL of your .ply file hosted on GitHub (leave "" for drag & drop)
+    // ════════════════════════════════════════════════════════════════
+    //   ★  CONFIGURATION  ★
+    // ════════════════════════════════════════════════════════════════
+    // Paste your GitHub raw file URL here to auto-load.
+    // Leave as "" to use drag & drop.
     const MODEL_URL = "";
+    // ════════════════════════════════════════════════════════════════
 
-    // Default rotation in degrees (use POS button to find correct values,
-    // then click "Copy Code Values" and paste here)
-    const MODEL_ROTATION = { x: -90, y: 0, z: 0 };
+    // ── Renderer ─────────────────────────────────────────────────────
+    const canvas = document.getElementById('canvas');
+    const wrap   = document.getElementById('wrap');
 
-    // Default position offset (vertical lift off the grid, etc.)
-    const MODEL_OFFSET = { x: 0, y: 0, z: 0 };
-
-    // ═══════════════════════════════════════════════════════════════════
-
-    const STORAGE_KEY = 'thesis-viewer-v2';
-    const R2D = 180 / Math.PI;
-    const D2R = Math.PI / 180;
-
-    // ── Renderer ──────────────────────────────────────────────────────
-    const canvas = document.getElementById('three-canvas');
-    const wrap   = document.getElementById('scene-wrap');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-    renderer.setClearColor(0x080a09);
+    renderer.setClearColor(0x0a0c0b);
 
-    // ── Scene / Camera ─────────────────────────────────────────────
+    // Color space — required for GLB textures to look correct
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // Tone mapping — ACESFilmic looks cinematic but needs higher exposure
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.8;   // ← start value; user can adjust with ☀ button
+
+    // ── Scene / Camera ───────────────────────────────────────────────
     const scene  = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.001, 2000);
-    camera.position.set(0, 1.5, 5);
+    const camera = new THREE.PerspectiveCamera(
+      45, wrap.clientWidth / wrap.clientHeight, 0.001, 2000
+    );
+    camera.position.set(0, 2, 5);
 
-    // ── OrbitControls ──────────────────────────────────────────────
+    // ── OrbitControls ────────────────────────────────────────────────
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping     = true;
-    controls.dampingFactor     = 0.05;
+    controls.enableDamping      = true;
+    controls.dampingFactor      = 0.05;
     controls.screenSpacePanning = true;
 
-    // ── Lights ─────────────────────────────────────────────────────
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(5, 10, 7); scene.add(key);
-    const fill = new THREE.DirectionalLight(0xddeeff, 0.3); fill.position.set(-5, 3, -5); scene.add(fill);
-    const bot  = new THREE.DirectionalLight(0xffeedd, 0.2); bot.position.set(0, -8, 0);  scene.add(bot);
-    scene.add(new THREE.GridHelper(20, 60, 0x181e1c, 0x131815));
+    // ── LIGHTING ─────────────────────────────────────────────────────
+    //
+    //  GLB files use physically-based materials (PBR).
+    //  They need MUCH more light than regular meshes.
+    //  We use a 4-light setup that works well for outdoor 3D scans:
 
-    // Render loop
-    (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();
+    // 1. Hemisphere light — simulates open sky
+    //    Sky color from above, ground bounce from below
+    const hemiLight = new THREE.HemisphereLight(
+      0xc8e0ff,   // sky color  (soft blue)
+      0x8a7060,   // ground color (warm brown)
+      1.2         // intensity
+    );
+    scene.add(hemiLight);
 
-    // Resize
-    window.addEventListener('resize', () => {
+    // 2. Ambient light — fills all shadows uniformly
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+    scene.add(ambientLight);
+
+    // 3. Key / sun light — main directional light from upper right
+    const sunLight = new THREE.DirectionalLight(0xfff5e0, 2.5);   // warm white
+    sunLight.position.set(5, 10, 7);
+    scene.add(sunLight);
+
+    // 4. Fill light — softens shadows from the opposite side
+    const fillLight = new THREE.DirectionalLight(0xddeeff, 0.8);
+    fillLight.position.set(-5, 4, -5);
+    scene.add(fillLight);
+
+    // Grid on the floor
+    scene.add(new THREE.GridHelper(20, 60, 0x1e2a22, 0x181e1c));
+
+    // ── Render loop ──────────────────────────────────────────────────
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // ── Resize ──────────────────────────────────────────────────────
+    window.addEventListener('resize', function () {
       renderer.setSize(wrap.clientWidth, wrap.clientHeight);
       camera.aspect = wrap.clientWidth / wrap.clientHeight;
       camera.updateProjectionMatrix();
     });
 
-    // ── meshGroup ──────────────────────────────────────────────────
-    //
-    //  All user positioning (rotation + up/down) goes on meshGroup.
-    //  The centering offset goes on mesh inside meshGroup.
-    //  This keeps them separate and clean.
-    //
-    //   scene
-    //    └── meshGroup  ← you rotate/move this
-    //          └── mesh ← auto-centered here
+    // ── Model group ──────────────────────────────────────────────────
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
-    const meshGroup = new THREE.Group();
-    scene.add(meshGroup);
+    let currentModel = null;
+    let currentMats  = [];
 
-    let mesh = null, mat = null;
-    let orientMode = false, isDragging = false;
-    let lastMX = 0, lastMY = 0;
-
-    // ── ORIENT MODE MOUSE HANDLING ─────────────────────────────────
-    //
-    //  Plain drag   → rotate the model (Y axis = left/right, X = up/down tilt)
-    //  Shift + drag → move the model   (like Blender Shift+Middle Mouse)
-    //                 left/right = X axis, up/down = Y axis
-
-    renderer.domElement.addEventListener('mousedown', (e) => {
-      if (!orientMode || e.button !== 0) return;
-      isDragging = true;
-      lastMX = e.clientX; lastMY = e.clientY;
-      document.body.classList.add(e.shiftKey ? 'panning' : 'rotating');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!orientMode || !isDragging) return;
-      const dx = e.clientX - lastMX;
-      const dy = e.clientY - lastMY;
-      lastMX = e.clientX; lastMY = e.clientY;
-
-      if (e.shiftKey) {
-        // MOVE — like Blender's Shift+Middle Mouse pan
-        // Horizontal drag = slide left/right (X)
-        // Vertical drag   = slide up/down (Y) — note: screen Y is flipped
-        meshGroup.position.x += dx * 0.004;
-        meshGroup.position.y -= dy * 0.004;
-      } else {
-        // ROTATE
-        meshGroup.rotation.y += dx * 0.009;
-        meshGroup.rotation.x += dy * 0.009;
-      }
-      syncDisplay();
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      document.body.classList.remove('rotating', 'panning');
-    });
-
-    // Touch (mobile — single finger = rotate)
-    renderer.domElement.addEventListener('touchstart', (e) => {
-      if (!orientMode || e.touches.length !== 1) return;
-      isDragging = true; lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
-    });
-    window.addEventListener('touchmove', (e) => {
-      if (!orientMode || !isDragging || e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - lastMX;
-      const dy = e.touches[0].clientY - lastMY;
-      lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
-      meshGroup.rotation.y += dx * 0.009;
-      meshGroup.rotation.x += dy * 0.009;
-      syncDisplay();
-    });
-    window.addEventListener('touchend', () => { isDragging = false; });
-
-    function syncDisplay() {
-      document.getElementById('rv-x').textContent = (meshGroup.rotation.x * R2D).toFixed(1) + '°';
-      document.getElementById('rv-y').textContent = (meshGroup.rotation.y * R2D).toFixed(1) + '°';
-      document.getElementById('pv-y').textContent = meshGroup.position.y.toFixed(2);
-    }
-
-    function enterOrientMode() {
-      orientMode = true; controls.enabled = false;
-      document.body.classList.add('orient-mode');
-      document.getElementById('orient-banner').classList.add('show');
-      document.getElementById('btn-orient').classList.add('on');
-      syncDisplay();
-    }
-
-    function exitOrientMode() {
-      orientMode = false; isDragging = false; controls.enabled = true;
-      document.body.classList.remove('orient-mode', 'rotating', 'panning');
-      document.getElementById('orient-banner').classList.remove('show');
-      document.getElementById('btn-orient').classList.remove('on');
-    }
-
-    // ── SAVE / LOAD (localStorage) ─────────────────────────────────
-    //
-    //  localStorage is built into every browser — it's a tiny storage
-    //  that persists after closing the tab. Free, no server needed.
-    //  The saved position is tied to the URL of the page, so it works
-    //  perfectly for a GitHub Pages deployment.
-
-    function saveTransform() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          rx: meshGroup.rotation.x, ry: meshGroup.rotation.y, rz: meshGroup.rotation.z,
-          px: meshGroup.position.x, py: meshGroup.position.y, pz: meshGroup.position.z,
-        }));
-        document.getElementById('saved-badge').classList.add('show');
-        showToast('✓  Position saved permanently to this browser');
-      } catch {
-        showToast('Could not save — try a non-private browser tab');
-      }
-    }
-
-    function applySaved() {
-      try {
-        const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (!d) return false;
-        meshGroup.rotation.set(d.rx, d.ry, d.rz);
-        meshGroup.position.set(d.px, d.py, d.pz);
-        syncDisplay();
-        return true;
-      } catch { return false; }
-    }
-
-    // ── BUILD MESH ──────────────────────────────────────────────────
-    function buildMesh(geometry, name, sizeStr) {
-      geometry.computeVertexNormals();
-      const hasColor = geometry.hasAttribute('color');
-
-      mat = new THREE.MeshStandardMaterial({ vertexColors: hasColor, roughness: 0.72, metalness: 0.06 });
-      const m = new THREE.Mesh(geometry, mat);
-
-      // Auto-center
-      geometry.computeBoundingBox();
-      const box = geometry.boundingBox;
-      const center = new THREE.Vector3(); box.getCenter(center);
-      const size   = new THREE.Vector3(); box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z);
-      m.position.set(-center.x, -center.y, -center.z);
-      m.scale.setScalar(2 / maxDim);
-
-      // Clear old
-      while (meshGroup.children.length) {
-        const old = meshGroup.children[0];
-        old.geometry?.dispose(); old.material?.dispose(); meshGroup.remove(old);
-      }
-      meshGroup.add(m); mesh = m;
-
-      // Restore saved OR apply config defaults
-      const hadSaved = applySaved();
-      if (!hadSaved) {
-        meshGroup.rotation.set(MODEL_ROTATION.x * D2R, MODEL_ROTATION.y * D2R, MODEL_ROTATION.z * D2R);
-        meshGroup.position.set(MODEL_OFFSET.x, MODEL_OFFSET.y, MODEL_OFFSET.z);
-      } else {
-        document.getElementById('saved-badge').classList.add('show');
-        showToast('Restored your saved position');
-      }
-
-      // Fit camera
-      const b2 = new THREE.Box3().setFromObject(meshGroup);
-      const fSz = b2.getSize(new THREE.Vector3()).length();
-      const fCt = b2.getCenter(new THREE.Vector3());
-      camera.near = fSz / 100; camera.far = fSz * 100; camera.updateProjectionMatrix();
-      camera.position.copy(fCt); camera.position.z += fSz * 1.7;
-      controls.target.copy(fCt); controls.update();
-
-      // Stats
-      const verts = geometry.attributes.position.count;
-      const faces = geometry.index ? geometry.index.count / 3 : verts / 3;
-      document.getElementById('sv').textContent = verts.toLocaleString();
-      document.getElementById('sf').textContent = Math.floor(faces).toLocaleString();
-      document.getElementById('ss').textContent = sizeStr;
-      document.getElementById('sc').textContent = hasColor ? 'YES' : 'NONE';
-      document.getElementById('hdr-file').textContent = name;
-      document.getElementById('toolbar').style.display = 'flex';
-      document.getElementById('stats').style.display   = 'flex';
-      document.getElementById('loading').classList.add('hidden');
-    }
-
-    // ── LOAD FROM URL ───────────────────────────────────────────────
-    async function loadFromURL(url) {
-      document.getElementById('drop-zone').classList.add('hidden');
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('ld-msg').textContent = 'Downloading model…';
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const total = parseInt(res.headers.get('content-length') || '0');
-        const reader = res.body.getReader();
-        const chunks = []; let received = 0;
-        while (true) {
-          const { done, value } = await reader.read(); if (done) break;
-          chunks.push(value); received += value.length;
-          if (total) {
-            document.getElementById('ld-bar').style.width = (5 + Math.round(received/total*85)) + '%';
-            document.getElementById('ld-prog').textContent = (received/1048576).toFixed(1)+' / '+(total/1048576).toFixed(1)+' MB';
+    // ── Collect all materials in a model ─────────────────────────────
+    function collectMaterials(root) {
+      var mats = [];
+      root.traverse(function (child) {
+        if (child.isMesh) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(function (m) { mats.push(m); });
+          } else {
+            mats.push(child.material);
           }
         }
-        document.getElementById('ld-msg').textContent = 'Parsing mesh…';
-        document.getElementById('ld-bar').style.width = '92%';
-        const flat = new Uint8Array(received); let off = 0;
-        for (const c of chunks) { flat.set(c, off); off += c.length; }
-        const geo = new PLYLoader().parse(flat.buffer);
-        document.getElementById('ld-bar').style.width = '100%';
-        buildMesh(geo, url.split('/').pop().split('?')[0], (received/1048576).toFixed(1)+' MB');
-      } catch (err) {
-        console.error(err);
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('drop-zone').classList.remove('hidden');
-        document.getElementById('url-note').textContent = '⚠ Auto-load failed (' + err.message + '). Use drag & drop.';
-      }
+      });
+      return mats;
     }
 
-    // ── LOAD FROM FILE ──────────────────────────────────────────────
-    async function loadFromFile(file) {
-      document.getElementById('drop-zone').classList.add('hidden');
+    // ── Center model and place its BOTTOM on the grid ─────────────────
+    //
+    //  Previous version placed the BOUNDING BOX CENTER at Y=0
+    //  which put the lower half underground.
+    //
+    //  This version:
+    //   1. Normalizes the scale to 2 units
+    //   2. Centers on X and Z axes
+    //   3. Lifts on Y so the bottom of the model sits exactly on the grid
+
+    function placeOnGrid(root) {
+      // Step 1: Get original bounding box
+      var box    = new THREE.Box3().setFromObject(root);
+      var center = new THREE.Vector3();
+      var size   = new THREE.Vector3();
+      box.getCenter(center);
+      box.getSize(size);
+      var maxDim = Math.max(size.x, size.y, size.z);
+
+      // Step 2: Apply uniform scale (normalize to 2 units)
+      root.scale.setScalar(2 / maxDim);
+
+      // Step 3: Center on X and Z — but leave Y for now
+      root.position.x = -center.x * (2 / maxDim);
+      root.position.z = -center.z * (2 / maxDim);
+      root.position.y = 0;
+
+      // Step 4: Recompute bounding box AFTER scaling/repositioning
+      //         then lift so the bottom (min.y) sits at Y = 0
+      var scaledBox = new THREE.Box3().setFromObject(root);
+      root.position.y = -scaledBox.min.y;    // ← this is the key fix
+    }
+
+    // ── Fit camera to model after placing ────────────────────────────
+    function fitCamera(root) {
+      var box   = new THREE.Box3().setFromObject(root);
+      var bsize = box.getSize(new THREE.Vector3()).length();
+      var bctr  = box.getCenter(new THREE.Vector3());
+
+      camera.near = bsize / 100;
+      camera.far  = bsize * 100;
+      camera.updateProjectionMatrix();
+
+      // Position camera in front and slightly above the model
+      camera.position.set(
+        bctr.x,
+        bctr.y + bsize * 0.3,
+        bctr.z + bsize * 1.6
+      );
+      controls.target.copy(bctr);
+      controls.update();
+    }
+
+    // ── Count vertices / faces across all meshes ─────────────────────
+    function getModelStats(root) {
+      var v = 0, f = 0;
+      root.traverse(function (child) {
+        if (child.isMesh && child.geometry) {
+          v += child.geometry.attributes.position.count;
+          f += child.geometry.index
+            ? Math.floor(child.geometry.index.count / 3)
+            : Math.floor(child.geometry.attributes.position.count / 3);
+        }
+      });
+      return { verts: v, faces: f };
+    }
+
+    // ── Show model (called after both GLB and PLY load) ───────────────
+    function showModel(root, fileName, fileSize, fmt) {
+      // Clear previous model from group
+      while (modelGroup.children.length > 0) {
+        var old = modelGroup.children[0];
+        old.traverse(function (child) {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(function (m) { m.dispose(); });
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+        modelGroup.remove(old);
+      }
+
+      modelGroup.add(root);
+      currentModel = root;
+
+      // Place on grid + fit camera
+      placeOnGrid(root);
+      fitCamera(root);
+
+      // Collect materials for wireframe / CLR toggle
+      currentMats = collectMaterials(root);
+
+      // Update stats UI
+      var s = getModelStats(root);
+      document.getElementById('st-v').textContent = s.verts.toLocaleString();
+      document.getElementById('st-f').textContent = s.faces.toLocaleString();
+      document.getElementById('st-s').textContent = fileSize;
+
+      var fmtEl = document.getElementById('stat-fmt');
+      fmtEl.textContent = fmt;
+      fmtEl.className   = (fmt === 'GLB' || fmt === 'GLTF') ? 'glb' : '';
+
+      document.getElementById('hdr-file').textContent    = fileName;
+      document.getElementById('toolbar').style.display   = 'flex';
+      document.getElementById('stats').style.display     = 'flex';
+      document.getElementById('loading').classList.add('hidden');
+
+      // Reset toggle states
+      isWireframe     = false;
+      showingOriginal = true;
+      document.getElementById('btn-wf').classList.remove('on');
+      document.getElementById('btn-clr').classList.remove('on');
+    }
+
+    // ── Parse GLB ────────────────────────────────────────────────────
+    function parseGLB(arrayBuffer) {
+      return new Promise(function (resolve, reject) {
+        new GLTFLoader().parse(arrayBuffer, '', resolve, reject);
+      });
+    }
+
+    // ── Parse PLY ────────────────────────────────────────────────────
+    function parsePLY(arrayBuffer) {
+      var geo  = new PLYLoader().parse(arrayBuffer);
+      geo.computeVertexNormals();
+      var mat  = new THREE.MeshStandardMaterial({
+        vertexColors: geo.hasAttribute('color'),
+        roughness: 0.72, metalness: 0.06
+      });
+      return new THREE.Mesh(geo, mat);
+    }
+
+    // ── Load from File ────────────────────────────────────────────────
+    async function loadFile(file) {
+      var ext = file.name.split('.').pop().toLowerCase();
+
+      document.getElementById('dropzone').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('ld-msg').textContent = 'Parsing mesh…';
-      document.getElementById('ld-bar').style.width = '30%';
+      document.getElementById('ld-error').style.display = 'none';
+      document.getElementById('ld-msg').textContent     = 'Reading file…';
+      document.getElementById('ld-bar').style.width     = '15%';
+      document.getElementById('ld-prog').textContent    = file.name;
+
       try {
-        const ab = await file.arrayBuffer();
-        document.getElementById('ld-bar').style.width = '75%';
-        const geo = new PLYLoader().parse(ab);
+        var ab = await file.arrayBuffer();
+        document.getElementById('ld-bar').style.width  = '60%';
+        document.getElementById('ld-msg').textContent  = 'Parsing model…';
+
+        var root, fmt;
+        if (ext === 'glb' || ext === 'gltf') {
+          var gltf = await parseGLB(ab);
+          root = gltf.scene;
+          fmt  = ext === 'glb' ? 'GLB' : 'GLTF';
+        } else if (ext === 'ply') {
+          root = parsePLY(ab);
+          fmt  = 'PLY';
+        } else {
+          throw new Error('Unsupported format. Use .glb, .gltf, or .ply');
+        }
+
         document.getElementById('ld-bar').style.width = '100%';
-        buildMesh(geo, file.name, (file.size/1048576).toFixed(1)+' MB');
+        showModel(root, file.name, (file.size / 1048576).toFixed(1) + ' MB', fmt);
+
       } catch (err) {
-        console.error(err);
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('drop-zone').classList.remove('hidden');
+        console.error('Load error:', err);
+        document.getElementById('ld-msg').textContent     = 'Failed to load';
+        document.getElementById('ld-error').textContent   = 'Error: ' + err.message;
+        document.getElementById('ld-error').style.display = 'block';
+        setTimeout(function () {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('dropzone').classList.remove('hidden');
+        }, 3000);
       }
     }
 
-    // Startup
-    if (MODEL_URL) {
-      loadFromURL(MODEL_URL);
-    } else {
-      document.getElementById('url-note').textContent = 'Set MODEL_URL in the code to auto-load from GitHub';
+    // ── Load from URL ─────────────────────────────────────────────────
+    async function loadURL(url) {
+      var ext = url.split('?')[0].split('.').pop().toLowerCase();
+
+      document.getElementById('dropzone').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('ld-error').style.display = 'none';
+      document.getElementById('ld-msg').textContent     = 'Downloading model…';
+      document.getElementById('ld-bar').style.width     = '5%';
+
+      try {
+        var res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+        var total  = parseInt(res.headers.get('content-length') || '0');
+        var reader = res.body.getReader();
+        var chunks = [];
+        var received = 0;
+
+        while (true) {
+          var r = await reader.read();
+          if (r.done) break;
+          chunks.push(r.value);
+          received += r.value.length;
+          if (total > 0) {
+            document.getElementById('ld-bar').style.width =
+              (5 + Math.round(received / total * 80)) + '%';
+            document.getElementById('ld-prog').textContent =
+              (received / 1048576).toFixed(1) + ' / ' + (total / 1048576).toFixed(1) + ' MB';
+          }
+        }
+
+        document.getElementById('ld-msg').textContent = 'Parsing model…';
+        document.getElementById('ld-bar').style.width = '88%';
+
+        var flat = new Uint8Array(received), off = 0;
+        for (var i = 0; i < chunks.length; i++) { flat.set(chunks[i], off); off += chunks[i].length; }
+
+        var root, fmt;
+        if (ext === 'glb' || ext === 'gltf') {
+          var gltf = await parseGLB(flat.buffer);
+          root = gltf.scene; fmt = 'GLB';
+        } else {
+          root = parsePLY(flat.buffer); fmt = 'PLY';
+        }
+
+        document.getElementById('ld-bar').style.width = '100%';
+        var name = url.split('/').pop().split('?')[0];
+        showModel(root, name, (received / 1048576).toFixed(1) + ' MB', fmt);
+
+      } catch (err) {
+        console.error('URL load error:', err);
+        document.getElementById('ld-msg').textContent     = 'Download failed';
+        document.getElementById('ld-error').textContent   = 'Error: ' + err.message + ' — use drag & drop instead.';
+        document.getElementById('ld-error').style.display = 'block';
+        setTimeout(function () {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('dropzone').classList.remove('hidden');
+          document.getElementById('dz-note').textContent = '⚠ Auto-load failed. Drop your file here instead.';
+        }, 3000);
+      }
     }
 
-    // Drag & drop
-    const dz = document.getElementById('drop-zone');
-    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('over'); });
-    dz.addEventListener('dragleave', ()  => dz.classList.remove('over'));
-    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); if (e.dataTransfer.files[0]) loadFromFile(e.dataTransfer.files[0]); });
-    document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) loadFromFile(e.target.files[0]); });
+    // ── Startup ───────────────────────────────────────────────────────
+    if (MODEL_URL && MODEL_URL !== '') {
+      loadURL(MODEL_URL);
+    } else {
+      document.getElementById('dz-note').textContent =
+        'Set MODEL_URL in the code to auto-load from GitHub';
+    }
 
-    // ── TOOLBAR ─────────────────────────────────────────────────────
-    document.getElementById('btn-orient').addEventListener('click', () => orientMode ? exitOrientMode() : enterOrientMode());
-
-    let wireframe = false;
-    document.getElementById('btn-wf').addEventListener('click', function() {
-      if (!mat) return; wireframe = !wireframe; mat.wireframe = wireframe; this.classList.toggle('on', wireframe);
+    // ── Drag & drop ───────────────────────────────────────────────────
+    var dz = document.getElementById('dropzone');
+    dz.addEventListener('dragover',  function (e) { e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave', function ()  { dz.classList.remove('over'); });
+    dz.addEventListener('drop', function (e) {
+      e.preventDefault(); dz.classList.remove('over');
+      if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+    });
+    document.getElementById('file-input').addEventListener('change', function (e) {
+      if (e.target.files[0]) loadFile(e.target.files[0]);
     });
 
-    document.getElementById('btn-rst').addEventListener('click', () => {
-      if (!mesh) return;
-      const b = new THREE.Box3().setFromObject(meshGroup);
-      const s = b.getSize(new THREE.Vector3()).length();
-      const c = b.getCenter(new THREE.Vector3());
-      camera.position.copy(c); camera.position.z += s * 1.7; controls.target.copy(c); controls.update();
+    // ── Toolbar: Wireframe ────────────────────────────────────────────
+    var isWireframe = false;
+    document.getElementById('btn-wf').addEventListener('click', function () {
+      if (!currentModel) return;
+      isWireframe = !isWireframe;
+      currentMats.forEach(function (m) { m.wireframe = isWireframe; });
+      this.classList.toggle('on', isWireframe);
     });
 
-    let showVC = true;
-    document.getElementById('btn-clr').addEventListener('click', function() {
-      if (!mat || !mesh) return; showVC = !showVC;
-      const has = mesh.geometry.hasAttribute('color');
-      mat.vertexColors = showVC && has; mat.color.set(showVC && has ? 0xffffff : 0x6e9e80);
-      mat.needsUpdate = true; this.classList.toggle('on', !showVC);
+    // ── Toolbar: Reset camera ─────────────────────────────────────────
+    document.getElementById('btn-cam').addEventListener('click', function () {
+      if (!currentModel) return;
+      fitCamera(currentModel);
     });
 
-    document.getElementById('btn-new').addEventListener('click', () => {
-      exitOrientMode();
-      document.getElementById('toolbar').style.display = 'none';
-      document.getElementById('stats').style.display   = 'none';
-      document.getElementById('hdr-file').textContent  = 'no model loaded';
-      document.getElementById('saved-badge').classList.remove('show');
+    // ── Toolbar: Color toggle ─────────────────────────────────────────
+    var showingOriginal = true;
+    var solidGrayMat = new THREE.MeshStandardMaterial({ color: 0x7a9e85, roughness: 0.7, metalness: 0.05 });
+
+    document.getElementById('btn-clr').addEventListener('click', function () {
+      if (!currentModel) return;
+      showingOriginal = !showingOriginal;
+      currentModel.traverse(function (child) {
+        if (!child.isMesh) return;
+        if (showingOriginal) {
+          if (child._origMat !== undefined) child.material = child._origMat;
+        } else {
+          if (child._origMat === undefined) child._origMat = child.material;
+          child.material = solidGrayMat;
+        }
+      });
+      this.classList.toggle('on', !showingOriginal);
+    });
+
+    // ── Toolbar: Brightness panel ─────────────────────────────────────
+    document.getElementById('btn-brt').addEventListener('click', function () {
+      var panel = document.getElementById('brightness-panel');
+      var open  = panel.classList.contains('show');
+      panel.classList.toggle('show', !open);
+      this.classList.toggle('on', !open);
+    });
+
+    // Exposure slider
+    document.getElementById('sl-exposure').addEventListener('input', function () {
+      var val = parseFloat(this.value);
+      renderer.toneMappingExposure = val;
+      document.getElementById('val-exposure').textContent = val.toFixed(1);
+    });
+
+    // Ambient light slider
+    document.getElementById('sl-ambient').addEventListener('input', function () {
+      var val = parseFloat(this.value);
+      ambientLight.intensity = val;
+      document.getElementById('val-ambient').textContent = val.toFixed(1);
+    });
+
+    // Sun light slider
+    document.getElementById('sl-sun').addEventListener('input', function () {
+      var val = parseFloat(this.value);
+      sunLight.intensity = val;
+      document.getElementById('val-sun').textContent = val.toFixed(1);
+    });
+
+    // ── Toolbar: New file ─────────────────────────────────────────────
+    document.getElementById('btn-new').addEventListener('click', function () {
+      document.getElementById('toolbar').style.display         = 'none';
+      document.getElementById('stats').style.display           = 'none';
+      document.getElementById('brightness-panel').classList.remove('show');
+      document.getElementById('btn-brt').classList.remove('on');
+      document.getElementById('hdr-file').textContent          = 'no model loaded';
+      document.getElementById('dz-note').textContent           = '';
       dz.classList.remove('hidden');
     });
 
-    // ── ORIENT BANNER ACTIONS ────────────────────────────────────────
-    document.getElementById('ob-save').addEventListener('click', saveTransform);
-
-    // Place model base on grid (floor = Y 0)
-    document.getElementById('ob-center').addEventListener('click', () => {
-      if (!mesh) return;
-      const b = new THREE.Box3().setFromObject(meshGroup);
-      meshGroup.position.y -= b.min.y;
-      syncDisplay(); showToast('Model placed on grid floor');
-    });
-
-    document.getElementById('ob-reset').addEventListener('click', () => {
-      meshGroup.rotation.set(MODEL_ROTATION.x * D2R, MODEL_ROTATION.y * D2R, MODEL_ROTATION.z * D2R);
-      meshGroup.position.set(MODEL_OFFSET.x, MODEL_OFFSET.y, MODEL_OFFSET.z);
-      syncDisplay();
-    });
-
-    document.getElementById('ob-copy').addEventListener('click', () => {
-      const rx = (meshGroup.rotation.x * R2D).toFixed(2);
-      const ry = (meshGroup.rotation.y * R2D).toFixed(2);
-      const rz = (meshGroup.rotation.z * R2D).toFixed(2);
-      const px = meshGroup.position.x.toFixed(4);
-      const py = meshGroup.position.y.toFixed(4);
-      const pz = meshGroup.position.z.toFixed(4);
-      navigator.clipboard.writeText(
-        `const MODEL_ROTATION = { x: ${rx}, y: ${ry}, z: ${rz} };\nconst MODEL_OFFSET   = { x: ${px}, y: ${py}, z: ${pz} };`
-      ).then(() => showToast('Copied! Paste into CONFIG section of the HTML (around line 20)'));
-    });
-
-    document.getElementById('ob-exit').addEventListener('click', exitOrientMode);
-    window.addEventListener('keydown', e => { if (e.key === 'Escape') exitOrientMode(); });
-
-    // Toast
-    let toastTimer;
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-    }
   </script>
 </body>
 </html>
