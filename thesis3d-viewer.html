@@ -472,7 +472,13 @@
         vertexColors: geo.hasAttribute('color'),
         roughness: 0.72, metalness: 0.06
       });
-      return new THREE.Mesh(geo, mat);
+      var mesh = new THREE.Mesh(geo, mat);
+
+      // Blender exports PLY with Z-up coordinates, while Three.js expects Y-up.
+      // Rotate PLY meshes so they appear upright in this viewer.
+      mesh.rotation.x = -Math.PI / 2;
+
+      return mesh;
     }
 
     // ── Load from File ────────────────────────────────────────────────
