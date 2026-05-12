@@ -11,7 +11,7 @@ This project is a 3D viewer that allows you to view and interact with 3D models 
 
 Click the link below to open the 3D viewer:
 
-**[3D Viewer](https://ljun00.github.io/thesis3d-viewer/thesis3d-viewer.html)**
+**[3D Viewer](https://ljun00.github.io/thesis3d-viewer/3d-viewer-final2.html)**
 
 ### What happens when you click the link?
 
