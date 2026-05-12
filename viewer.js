@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
 //   3D Heritage Viewer — viewer.js
-//   All Three.js logic separated from HTML and CSS
 // ═══════════════════════════════════════════════════════════════
 
 import * as THREE        from 'https://esm.sh/three@0.160.0';
