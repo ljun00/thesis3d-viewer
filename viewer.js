@@ -104,6 +104,110 @@ scene.add(modelGroup);
 let currentModel = null;
 let currentMats  = [];
 
+// ── PART INFO DATA ────────────────────────────────────────────
+// Height zones: when you click the model, we check the Y position
+// of the click as a % of the total model height:
+//   Top 35%    → Roof  (Atep)
+//   Middle 40% → Walls (Dingding)
+//   Bottom 25% → Posts (Tukkod)
+//
+// To add your actual photo, put the image file in an "images/" folder
+// and replace the empty src "" with "images/roof.jpg" etc.
+
+const PART_INFO = {
+  roof: {
+    zone: 'Atep — Roof',
+    name: 'Atep (Traditional Thatched Roof)',
+    desc: `The atep is the thatched roof of the Ifugao Bale, made from
+cogon grass (Imperata cylindrica) or pili leaves. The steep
+A-frame pitch allows heavy rain to run off quickly — a practical
+design adapted to the high rainfall in the Ifugao highlands.
+The thickness of the thatch provides natural insulation against
+both heat and cold.`,
+    img:  '',   // ← replace with 'images/roof.jpg'
+  },
+  walls: {
+    zone: 'Dingding — Walls',
+    name: 'Dingding (Wooden Walls & Panels)',
+    desc: `The walls of the Bale are constructed from wood planks,
+often from durable local hardwoods. The single room design
+maximises interior space while the raised floor keeps the
+living area dry and protected from animals. Walls may feature
+carved decorative elements that reflect the family\'s status.`,
+    img:  '',   // ← replace with 'images/walls.jpg'
+  },
+  posts: {
+    zone: 'Tukkod — Posts',
+    name: 'Tukkod (Foundation Posts)',
+    desc: `The tukkod are massive hardwood posts that elevate the Bale
+above the ground. A characteristic feature is the wooden rat
+guard (halipan) — a disk-shaped barrier fitted around each
+post to prevent rodents from climbing into the house. The
+number and size of posts often reflects the wealth and
+prestige of the household.`,
+    img:  '',   // ← replace with 'images/posts.jpg'
+  },
+};
+
+// ── RAYCASTING: click on model to detect zone ─────────────────
+const raycaster = new THREE.Raycaster();
+const mouse     = new THREE.Vector2();
+
+renderer.domElement.addEventListener('click', function(e) {
+  if (!currentModel) return;
+
+  // Convert click position to normalized device coordinates (-1 to +1)
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width)  *  2 - 1;
+  mouse.y = ((e.clientY - rect.top)  / rect.height) * -2 + 1;
+
+  // Fire a ray from the camera through the click point
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(modelGroup.children, true);
+  if (hits.length === 0) { closePartPanel(); return; }
+
+  // Get the world-space Y of the click point
+  const clickY = hits[0].point.y;
+
+  // Get model's min/max Y to calculate the relative height (0–1)
+  const bbox      = new THREE.Box3().setFromObject(modelGroup);
+  const modelMinY = bbox.min.y;
+  const modelMaxY = bbox.max.y;
+  const relY = (clickY - modelMinY) / (modelMaxY - modelMinY);
+
+  // Pick zone based on relative height
+  let info;
+  if      (relY >= 0.65) info = PART_INFO.roof;
+  else if (relY >= 0.25) info = PART_INFO.walls;
+  else                   info = PART_INFO.posts;
+
+  showPartPanel(info);
+});
+
+function showPartPanel(info) {
+  document.getElementById('part-zone').textContent    = info.zone;
+  document.getElementById('part-name').textContent    = info.name;
+  document.getElementById('part-desc').textContent    = info.desc;
+
+  const img  = document.getElementById('part-img');
+  const ph   = document.getElementById('part-placeholder');
+  if (info.img) {
+    img.src          = info.img;
+    img.style.display  = 'block';
+    ph.style.display   = 'none';
+  } else {
+    img.style.display  = 'none';
+    ph.style.display   = 'flex';
+  }
+  document.getElementById('part-panel').classList.remove('hidden');
+}
+
+function closePartPanel() {
+  document.getElementById('part-panel').classList.add('hidden');
+}
+
+document.getElementById('part-close').addEventListener('click', closePartPanel);
+
 // ── Collect all materials from a model ───────────────────────
 function collectMaterials(root) {
   var mats = [];
