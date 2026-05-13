@@ -173,6 +173,7 @@
     <!-- ── 3D VIEWER AREA ─────────────────────────────────────────── -->
     <div id="wrap">
       <canvas id="canvas"></canvas>
+      <div id="hotspots-container"></div>
 
       <!-- Drop zone -->
       <div id="dropzone">
@@ -221,6 +222,14 @@
           <span class="tbtn-icon">+</span>
           <span class="tbtn-label">Load File</span>
         </button>
+        <button class="tbtn" id="btn-rotate" title="Auto-rotate model">
+          <span class="tbtn-icon">↻</span>
+          <span class="tbtn-label">Auto Rotate</span>
+        </button>
+        <button class="tbtn" id="btn-fs" title="Toggle fullscreen">
+          <span class="tbtn-icon">⤢</span>
+          <span class="tbtn-label">Fullscreen</span>
+        </button>
       </div>
 
       <!-- Brightness panel -->
@@ -257,16 +266,23 @@
     <div id="part-panel" class="hidden">
       <button id="part-close" title="Close">✕</button>
       <div class="part-badge" id="part-zone">Roof</div>
-      <div class="part-img-wrap">
-        <img id="part-img" src="" alt="" />
-        <div class="part-img-placeholder" id="part-placeholder">
-          <span>📷</span>
-          <span>photo goes here</span>
-        </div>
+      <div class="carousel">
+    <div class="carousel-track" id="carousel-track"></div>
+    <button class="carousel-btn prev" id="carousel-prev">&lsaquo;</button>
+    <button class="carousel-btn next" id="carousel-next">&rsaquo;</button>
+    <div class="carousel-dots" id="carousel-dots"></div>
+  </div>
       </div>
       <h3 class="part-name" id="part-name"></h3>
       <p class="part-desc" id="part-desc"></p>
+
+      <!-- Placeholder for editable notes (add later) -->
+      <div class="part-notes">
+        <div class="notes-title">Notes (edit later)</div>
+        <p class="notes-body" id="part-notes">[placeholder]</p>
+      </div>
     </div>
+
     <div id="part-overlay"></div>
     </div><!-- #wrap -->
 

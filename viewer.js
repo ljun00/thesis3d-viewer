@@ -85,6 +85,7 @@ scene.add(new THREE.GridHelper(20, 60, 0x1e2a22, 0x181e1c));
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+  updateHotspots();
   renderer.render(scene, camera);
 }
 animate();
@@ -149,62 +150,72 @@ prestige of the household.`,
   },
 };
 
+// ── FLOATING 3D HOTSPOT DEFINITIONS ────────────────────────────
+// yFrac: 0.0 = bottom of model, 1.0 = top
+// xFrac/zFrac: offset from center (-0.5 to 0.5)
+// Adjust these numbers if labels don't appear in the right spot.
+
+var HOTSPOT_DEFS = [
+  { key: 'roof',  label: '▲  Atep · Roof',   yFrac: 0.90, xFrac:  0.0, zFrac:  0.2 },
+  { key: 'walls', label: '◈  Dingding · Walls', yFrac: 0.52, xFrac:  0.4, zFrac:  0.3 },
+  { key: 'posts', label: '●  Tukkod · Posts', yFrac: 0.10, xFrac: -0.3, zFrac:  0.4 },
+];
+
+var hotspots = [];
+var currentHotspotKey = null;
+
 // ── RAYCASTING: click on model to detect zone ─────────────────
 const raycaster = new THREE.Raycaster();
+
 const mouse     = new THREE.Vector2();
 
+// NOTE: Click-on-model raycasting removed.
+// Hotspots handle opening/closing the part panel.
 renderer.domElement.addEventListener('click', function(e) {
-  if (!currentModel) return;
-
-  // Convert click position to normalized device coordinates (-1 to +1)
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((e.clientX - rect.left) / rect.width)  *  2 - 1;
-  mouse.y = ((e.clientY - rect.top)  / rect.height) * -2 + 1;
-
-  // Fire a ray from the camera through the click point
-  raycaster.setFromCamera(mouse, camera);
-  const hits = raycaster.intersectObjects(modelGroup.children, true);
-  if (hits.length === 0) { closePartPanel(); return; }
-
-  // Get the world-space Y of the click point
-  const clickY = hits[0].point.y;
-
-  // Get model's min/max Y to calculate the relative height (0–1)
-  const bbox      = new THREE.Box3().setFromObject(modelGroup);
-  const modelMinY = bbox.min.y;
-  const modelMaxY = bbox.max.y;
-  const relY = (clickY - modelMinY) / (modelMaxY - modelMinY);
-
-  // Pick zone based on relative height
-  let info;
-  if      (relY >= 0.65) info = PART_INFO.roof;
-  else if (relY >= 0.25) info = PART_INFO.walls;
-  else                   info = PART_INFO.posts;
-
-  showPartPanel(info);
+  // Click empty space: close panel
+  if (currentModel && (!hotspots || hotspots.length === 0)) {
+    closePartPanel();
+  }
 });
 
-function showPartPanel(info) {
-  document.getElementById('part-zone').textContent    = info.zone;
-  document.getElementById('part-name').textContent    = info.name;
-  document.getElementById('part-desc').textContent    = info.desc;
 
-  const img  = document.getElementById('part-img');
-  const ph   = document.getElementById('part-placeholder');
+function showPartPanel(info) {
+  if (!info) return;
+
+  var panel = document.getElementById('part-panel');
+  if (!panel) return;
+
+  var zoneEl = document.getElementById('part-zone');
+  var nameEl = document.getElementById('part-name');
+  var descEl = document.getElementById('part-desc');
+
+  if (zoneEl) zoneEl.textContent = info.zone;
+  if (nameEl) nameEl.textContent = info.name;
+  if (descEl) descEl.textContent = info.desc;
+
+  var img = document.getElementById('part-img');
+  var ph  = document.getElementById('part-placeholder');
+
   if (info.img) {
-    img.src          = info.img;
-    img.style.display  = 'block';
-    ph.style.display   = 'none';
+    if (img) {
+      img.src = info.img;
+      img.style.display = 'block';
+    }
+    if (ph) ph.style.display = 'none';
   } else {
-    img.style.display  = 'none';
-    ph.style.display   = 'flex';
+    if (img) img.style.display = 'none';
+    if (ph) ph.style.display = 'flex';
   }
-  document.getElementById('part-panel').classList.remove('hidden');
+
+  panel.classList.remove('hidden');
 }
+
 
 function closePartPanel() {
   document.getElementById('part-panel').classList.add('hidden');
+  currentHotspotKey = null;
 }
+
 
 document.getElementById('part-close').addEventListener('click', closePartPanel);
 
@@ -271,6 +282,89 @@ function getModelStats(root) {
   });
   return { verts: v, faces: f };
 }
+// ── CREATE HOTSPOT ELEMENTS ─────────────────────────────────────
+// Called after a model loads. Places glowing labels at defined
+// positions on the model surface.
+function setupHotspots() {
+  // Clear old hotspots
+  var container = document.getElementById('hotspots-container');
+  container.innerHTML = '';
+  hotspots = [];
+
+  if (!currentModel) return;
+
+  var bbox = new THREE.Box3().setFromObject(modelGroup);
+  var size = new THREE.Vector3();
+  bbox.getSize(size);
+
+  HOTSPOT_DEFS.forEach(function(def) {
+    // Calculate world position from fractions of the bounding box
+    var worldPos = new THREE.Vector3(
+      bbox.min.x + size.x * (0.5 + def.xFrac),
+      bbox.min.y + size.y * def.yFrac,
+      bbox.min.z + size.z * (0.5 + def.zFrac)
+    );
+
+    // Build the hotspot HTML element
+    var el = document.createElement('div');
+    el.className = 'hotspot';
+    el.dataset.key = def.key;
+    el.innerHTML =
+      '<div class="hotspot-ring">' +
+        '<div class="hotspot-pulse"></div>' +
+        '<div class="hotspot-dot"></div>' +
+      '</div>' +
+      '<div class="hotspot-label">' + def.label + '</div>';
+
+    el.addEventListener('click', (function(key) {
+      return function(e) {
+        e.stopPropagation(); // don't trigger canvas click
+
+        // Toggle panel when clicking the same hotspot again
+        if (currentHotspotKey === key && !document.getElementById('part-panel').classList.contains('hidden')) {
+          closePartPanel();
+          currentHotspotKey = null;
+          return;
+        }
+
+        currentHotspotKey = key;
+        showPartPanel(PART_INFO[key]);
+      };
+    })(def.key));
+
+
+    container.appendChild(el);
+    hotspots.push({ worldPos: worldPos, el: el });
+  });
+}
+
+// ── UPDATE HOTSPOT SCREEN POSITIONS every frame ─────────────────
+function updateHotspots() {
+  if (!hotspots || !hotspots.length) return;
+  if (!wrap || !camera) return;
+  var rect = wrap.getBoundingClientRect();
+  if (!rect || rect.width === 0 || rect.height === 0) return;
+
+  hotspots.forEach(function(hs) {
+    var pos = hs.worldPos.clone();
+    pos.project(camera); // convert 3D → normalized device coords
+
+    // Hide if the point is behind the camera
+    if (pos.z > 1) {
+      hs.el.style.opacity = '0';
+      hs.el.style.pointerEvents = 'none';
+      return;
+    }
+    // Convert to pixel position on the wrap div
+    var x = (pos.x *  0.5 + 0.5) * rect.width;
+    var y = (pos.y * -0.5 + 0.5) * rect.height;
+    hs.el.style.left         = x + 'px';
+    hs.el.style.top          = y + 'px';
+    hs.el.style.opacity      = '1';
+    hs.el.style.pointerEvents = 'auto';
+  });
+}
+
 
 // ── Update all stat displays (bottom bar + left panel) ────────
 function updateStats(fmt, verts, faces, size) {
@@ -328,6 +422,7 @@ function showModel(root, fileName, fileSize, fmt) {
   showingOriginal = true;
   document.getElementById('btn-wf').classList.remove('on');
   document.getElementById('btn-clr').classList.remove('on');
+  setupHotspots();
 }
 
 // ── Parse a GLB / GLTF file ───────────────────────────────────
@@ -521,6 +616,10 @@ document.getElementById('panel-toggle').addEventListener('click', function () {
   panel.classList.toggle('collapsed');
 });
 
+
+
+
+
 // ── Toolbar: Wireframe ────────────────────────────────────────
 var isWireframe = false;
 document.getElementById('btn-wf').addEventListener('click', function () {
@@ -590,6 +689,50 @@ document.getElementById('btn-new').addEventListener('click', function () {
   document.getElementById('dz-note').textContent           = '';
   document.getElementById('panel-stats').style.display     = 'none';
   dz.classList.remove('hidden');
+});
+
+// ── toolbar: AUTO-ROTATE ────────────────────────────────────────────────
+// OrbitControls has autoRotate built in — we just toggle it.
+var autoRotating = false;
+controls.autoRotateSpeed = 1.2; // degrees per second (lower = slower)
+
+document.getElementById('btn-rotate').addEventListener('click', function() {
+  autoRotating = !autoRotating;
+  controls.autoRotate = autoRotating;
+  this.classList.toggle('on', autoRotating);
+});
+
+// Stop auto-rotate the moment the user touches the model
+renderer.domElement.addEventListener('pointerdown', function() {
+  if (autoRotating) {
+    autoRotating = false;
+    controls.autoRotate = false;
+    document.getElementById('btn-rotate').classList.remove('on');
+  }
+});
+
+// ── FULLSCREEN ─────────────────────────────────────────────────
+document.getElementById('btn-fs').addEventListener('click', function() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+// Update icon when fullscreen state changes
+document.addEventListener('fullscreenchange', function() {
+  var btn = document.getElementById('btn-fs');
+  var isFs = !!document.fullscreenElement;
+  btn.classList.toggle('on', isFs);
+  btn.querySelector('.tbtn-icon').textContent  = isFs ? '✕' : '⤢';
+  btn.querySelector('.tbtn-label').textContent = isFs ? 'Exit Full' : 'Fullscreen';
+  // Resize renderer after fullscreen change
+  setTimeout(function() {
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    camera.aspect = wrap.clientWidth / wrap.clientHeight;
+    camera.updateProjectionMatrix();
+  }, 100);
 });
 
 // ── Toast helper ──────────────────────────────────────────────
