@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- ── TOP HEADER ──────────────────────────────────────────────── -->
+  <!-- ── TOP HEADER ──────────────────────────────────────────── -->
   <header id="header">
     <div class="header-left">
       <button id="panel-toggle" title="Toggle info panel">☰</button>
@@ -17,165 +17,190 @@
     <div id="hdr-file">No model loaded</div>
   </header>
 
-  <!-- ── MAIN LAYOUT (sidebar + viewer) ─────────────────────────── -->
+  <!-- ── MAIN LAYOUT (sidebar + viewer) ─────────────────────── -->
   <div id="main">
 
-    <!-- ── LEFT INFO PANEL ───────────────────────────────────────── -->
+    <!-- ── LEFT INFO PANEL ─────────────────────────────────────
+         NOTE: All content is inside #panel-inner so the panel
+         can collapse (width → 0) while still allowing scrolling
+         when open. Do NOT remove #panel-inner. -->
     <aside id="info-panel">
+      <div id="panel-inner">
 
-      <div class="panel-section about-section">
-        <div class="section-label">About This Model</div>
-        <p class="about-text">
-          This is an interactive 3D reconstruction of a an Ifugao bale house 
-          scale model created using photogrammetry. You can explore the 
-          model freely by rotating, zooming, and panning around it.
-        </p>
-      </div>
+        <div class="panel-section about-section">
+          <div class="section-label">About This Model</div>
+          <p class="about-text">
+            This is an interactive 3D reconstruction of an Ifugao Bale
+            house scale model created using photogrammetry. Explore
+            the model freely by rotating, zooming, and panning.
+          </p>
+        </div>
 
-      <div class="panel-divider"></div>
+        <div class="panel-divider"></div>
 
-      <!-- Navigation guide -->
-      <div class="panel-section">
-        <div class="section-label">How to Navigate</div>
+        <!-- Navigation guide -->
+        <div class="panel-section">
+          <div class="section-label">How to Navigate</div>
 
-        <div class="nav-item">
-          <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M11 6 L11 16 M6 11 L16 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          <div class="nav-item">
+            <div class="nav-icon">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M11 6 L11 16 M6 11 L16 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="nav-text">
+              <strong>Rotate</strong>
+              <span>Left-click and drag anywhere on the model</span>
+            </div>
           </div>
-          <div class="nav-text">
-            <strong>Rotate</strong>
-            <span>Left-click and drag anywhere on the model</span>
+
+          <div class="nav-item">
+            <div class="nav-icon">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M11 7 L11 9 M11 13 L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 11 L14 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="nav-text">
+              <strong>Zoom In / Out</strong>
+              <span>Scroll the mouse wheel up or down</span>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-icon">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 11 L9 9 M9 9 L9 13 M9 11 L15 11 M15 11 L13 9 M13 13 L15 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="nav-text">
+              <strong>Pan / Move View</strong>
+              <span>Right-click and drag to shift the view</span>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-icon">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M4 11 C4 7.13 7.13 4 11 4 C14.87 4 18 7.13 18 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M15 8 L18 11 L21 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="nav-text">
+              <strong>Reset View</strong>
+              <span>Click the <em>Reset View</em> button to return to default camera</span>
+            </div>
+          </div>
+
+          <div class="nav-item">
+            <div class="nav-icon" style="font-size:15px; color:var(--accent);">◉</div>
+            <div class="nav-text">
+              <strong>Explore Parts</strong>
+              <span>Click the glowing <span style="color:var(--accent)">green dots</span> on the model to learn about each part</span>
+            </div>
           </div>
         </div>
 
-        <div class="nav-item">
-          <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M11 7 L11 9 M11 13 L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M8 11 L14 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+        <div class="panel-divider"></div>
+
+        <!-- Button guide -->
+        <div class="panel-section">
+          <div class="section-label">Toolbar Buttons</div>
+
+          <div class="btn-guide-item">
+            <div class="btn-preview">▦</div>
+            <div class="btn-guide-text">
+              <strong>Wireframe</strong>
+              <span>Shows the mesh edges of the model. Tap again to turn off.</span>
+            </div>
           </div>
-          <div class="nav-text">
-            <strong>Zoom In / Out</strong>
-            <span>Scroll the mouse wheel up or down</span>
+          <div class="btn-guide-item">
+            <div class="btn-preview">⌂</div>
+            <div class="btn-guide-text">
+              <strong>Reset View</strong>
+              <span>Returns to the default camera position.</span>
+            </div>
+          </div>
+          <div class="btn-guide-item">
+            <div class="btn-preview">◑</div>
+            <div class="btn-guide-text">
+              <strong>Color Toggle</strong>
+              <span>Switch between original colors and a plain grey view.</span>
+            </div>
+          </div>
+          <div class="btn-guide-item">
+            <div class="btn-preview">☀</div>
+            <div class="btn-guide-text">
+              <strong>Brightness</strong>
+              <span>Adjust how bright or dark the model appears.</span>
+            </div>
+          </div>
+          <div class="btn-guide-item">
+            <div class="btn-preview">↻</div>
+            <div class="btn-guide-text">
+              <strong>Auto Rotate</strong>
+              <span>Slowly spins the model. Stops when you interact.</span>
+            </div>
+          </div>
+          <div class="btn-guide-item">
+            <div class="btn-preview">⤢</div>
+            <div class="btn-guide-text">
+              <strong>Fullscreen</strong>
+              <span>Expands to fill the whole screen.</span>
+            </div>
+          </div>
+          <div class="btn-guide-item">
+            <div class="btn-preview">+</div>
+            <div class="btn-guide-text">
+              <strong>Load File</strong>
+              <span>Load a different 3D model. Supports .glb and .ply.</span>
+            </div>
           </div>
         </div>
 
-        <div class="nav-item">
-          <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <circle cx="11" cy="11" r="9" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M7 11 L9 9 M9 9 L9 13 M9 11 L15 11 M15 11 L13 9 M13 13 L15 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="nav-text">
-            <strong>Pan / Move View</strong>
-            <span>Right-click and drag to shift the view</span>
+        <div class="panel-divider"></div>
+
+        <!-- Live model stats — shown after model loads -->
+        <div class="panel-section" id="panel-stats" style="display:none;">
+          <div class="section-label">Model Information</div>
+          <div class="stat-grid">
+            <div class="stat-row">
+              <span class="stat-key">Format</span>
+              <span class="stat-val" id="ps-fmt">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key">Vertices</span>
+              <span class="stat-val" id="ps-verts">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key">Faces</span>
+              <span class="stat-val" id="ps-faces">—</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-key">File Size</span>
+              <span class="stat-val" id="ps-size">—</span>
+            </div>
           </div>
         </div>
 
-        <div class="nav-item">
-          <div class="nav-icon">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M4 11 C4 7.13 7.13 4 11 4 C14.87 4 18 7.13 18 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              <path d="M15 8 L18 11 L21 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="nav-text">
-            <strong>Reset View</strong>
-            <span>Click the <em>Reset</em> button to go back to the default camera position</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-divider"></div>
-
-      <!-- Button guide -->
-      <div class="panel-section">
-        <div class="section-label">Toolbar Buttons</div>
-
-        <div class="btn-guide-item">
-          <div class="btn-preview">WF</div>
-          <div class="btn-guide-text">
-            <strong>Wireframe</strong>
-            <span>Shows the mesh structure of the model. Tap again to turn off.</span>
-          </div>
+        <div class="panel-footer">
+          Thesis Project · 3D Heritage Documentation
         </div>
 
-        <div class="btn-guide-item">
-          <div class="btn-preview">⌂</div>
-          <div class="btn-guide-text">
-            <strong>Reset Camera</strong>
-            <span>Returns to the default view if you get lost navigating.</span>
-          </div>
-        </div>
-
-        <div class="btn-guide-item">
-          <div class="btn-preview">CLR</div>
-          <div class="btn-guide-text">
-            <strong>Color Toggle</strong>
-            <span>Switch between the original texture colors and a plain grey view.</span>
-          </div>
-        </div>
-
-        <div class="btn-guide-item">
-          <div class="btn-preview">☀</div>
-          <div class="btn-guide-text">
-            <strong>Brightness</strong>
-            <span>Adjust how bright or dark the model appears using the sliders.</span>
-          </div>
-        </div>
-
-        <div class="btn-guide-item">
-          <div class="btn-preview">+</div>
-          <div class="btn-guide-text">
-            <strong>Load File</strong>
-            <span>Load a different 3D file. Supports <em>.glb</em>, <em>.gltf</em>, and <em>.ply</em> formats.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-divider"></div>
-
-      <!-- Model stats (live) -->
-      <div class="panel-section" id="panel-stats" style="display:none;">
-        <div class="section-label">Model Information</div>
-        <div class="stat-grid">
-          <div class="stat-row">
-            <span class="stat-key">Format</span>
-            <span class="stat-val" id="ps-fmt">—</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-key">Vertices</span>
-            <span class="stat-val" id="ps-verts">—</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-key">Faces</span>
-            <span class="stat-val" id="ps-faces">—</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-key">File Size</span>
-            <span class="stat-val" id="ps-size">—</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-footer">
-        Thesis Project · 3D Heritage Documentation
-      </div>
-
+      </div><!-- /#panel-inner -->
     </aside>
 
-    <!-- ── 3D VIEWER AREA ─────────────────────────────────────────── -->
+    <!-- ── 3D VIEWER AREA ───────────────────────────────────── -->
     <div id="wrap">
       <canvas id="canvas"></canvas>
+
+      <!-- Floating hotspot labels (positioned by JS each frame) -->
       <div id="hotspots-container"></div>
 
-      <!-- Drop zone -->
+      <!-- Drop zone — shown before a model is loaded -->
       <div id="dropzone">
         <div class="dz-icon">◈</div>
         <div class="dz-title">Drag & drop your 3D file here</div>
@@ -200,39 +225,39 @@
         <div id="ld-error"></div>
       </div>
 
-      <!-- Toolbar (right side) -->
+      <!-- Right-side toolbar -->
       <div id="toolbar">
-        <button class="tbtn" id="btn-wf" title="Toggle wireframe">
+        <button class="tbtn" id="btn-wf"     title="Toggle wireframe">
           <span class="tbtn-icon">▦</span>
           <span class="tbtn-label">Wireframe</span>
         </button>
-        <button class="tbtn" id="btn-cam" title="Reset camera view">
+        <button class="tbtn" id="btn-cam"    title="Reset camera view">
           <span class="tbtn-icon">⌂</span>
           <span class="tbtn-label">Reset View</span>
         </button>
-        <button class="tbtn" id="btn-clr" title="Toggle solid / original color">
+        <button class="tbtn" id="btn-clr"    title="Toggle solid / original color">
           <span class="tbtn-icon">◑</span>
           <span class="tbtn-label">Color</span>
         </button>
-        <button class="tbtn" id="btn-brt" title="Adjust brightness">
+        <button class="tbtn" id="btn-brt"    title="Adjust brightness">
           <span class="tbtn-icon">☀</span>
           <span class="tbtn-label">Brightness</span>
-        </button>
-        <button class="tbtn" id="btn-new" title="Load a different file">
-          <span class="tbtn-icon">+</span>
-          <span class="tbtn-label">Load File</span>
         </button>
         <button class="tbtn" id="btn-rotate" title="Auto-rotate model">
           <span class="tbtn-icon">↻</span>
           <span class="tbtn-label">Auto Rotate</span>
         </button>
-        <button class="tbtn" id="btn-fs" title="Toggle fullscreen">
+        <button class="tbtn" id="btn-fs"     title="Toggle fullscreen">
           <span class="tbtn-icon">⤢</span>
           <span class="tbtn-label">Fullscreen</span>
         </button>
+        <button class="tbtn" id="btn-new"    title="Load a different file">
+          <span class="tbtn-icon">+</span>
+          <span class="tbtn-label">Load File</span>
+        </button>
       </div>
 
-      <!-- Brightness panel -->
+      <!-- Brightness sliders panel -->
       <div id="brightness-panel">
         <div class="bp-title">Adjust Brightness</div>
         <div class="bp-row">
@@ -260,33 +285,40 @@
         &nbsp; SIZE <b id="st-s">—</b>
       </div>
 
+      <!-- ── PART INFO POPUP ────────────────────────────────────
+           IMPORTANT: ALL content must stay INSIDE this div.
+           The bug before was that </div> after .carousel was
+           closing this panel early. -->
+      <div id="part-panel" class="hidden">
+
+        <button id="part-close" title="Close">✕</button>
+        <div class="part-badge" id="part-zone">Part</div>
+
+        <!-- Image carousel -->
+        <div class="carousel">
+          <div class="carousel-track" id="carousel-track"></div>
+          <button class="carousel-btn prev" id="carousel-prev">&#8249;</button>
+          <button class="carousel-btn next" id="carousel-next">&#8250;</button>
+          <div class="carousel-dots"  id="carousel-dots"></div>
+          <div class="carousel-count" id="carousel-count"></div>
+        </div>
+
+        <!-- Part name and description — INSIDE #part-panel -->
+        <h3 class="part-name" id="part-name"></h3>
+        <p  class="part-desc" id="part-desc"></p>
+
+        <!-- Notes area (placeholder — edit freely) -->
+        <div class="part-notes">
+          <div class="notes-title">Notes</div>
+          <p class="notes-body" id="part-notes"></p>
+        </div>
+
+      </div><!-- /#part-panel -->
+
       <div id="toast"></div>
+    </div><!-- /#wrap -->
 
-      <!-- Part Info Popup -->
-    <div id="part-panel" class="hidden">
-      <button id="part-close" title="Close">✕</button>
-      <div class="part-badge" id="part-zone">Roof</div>
-      <div class="carousel">
-    <div class="carousel-track" id="carousel-track"></div>
-    <button class="carousel-btn prev" id="carousel-prev">&lsaquo;</button>
-    <button class="carousel-btn next" id="carousel-next">&rsaquo;</button>
-    <div class="carousel-dots" id="carousel-dots"></div>
-  </div>
-      </div>
-      <h3 class="part-name" id="part-name"></h3>
-      <p class="part-desc" id="part-desc"></p>
-
-      <!-- Placeholder for editable notes (add later) -->
-      <div class="part-notes">
-        <div class="notes-title">Notes (edit later)</div>
-        <p class="notes-body" id="part-notes">[placeholder]</p>
-      </div>
-    </div>
-
-    <div id="part-overlay"></div>
-    </div><!-- #wrap -->
-
-  </div><!-- #main -->
+  </div><!-- /#main -->
 
   <script type="module" src="viewer.js"></script>
 </body>

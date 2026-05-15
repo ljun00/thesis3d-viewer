@@ -26,7 +26,7 @@ import { PLYLoader }     from 'https://esm.sh/three@0.160.0/examples/jsm/loaders
 //    media.githubusercontent.com/media/
 //
 //  Leave as "" to use drag & drop only.
-//
+// we use locsl repo and host on github for easy access
 const MODEL_URL = "https://media.githubusercontent.com/media/ljun00/thesis3d-viewer/refs/heads/main/models/Bale.ply";
 
 // ═══════════════════════════════════════════════════════════════
@@ -37,7 +37,7 @@ const canvas = document.getElementById('canvas');
 const wrap   = document.getElementById('wrap');
 
 const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer.setSize(wrap.clientWidth, wrap.clientHeight);
 renderer.setClearColor(0x0a0c0b);
 renderer.outputColorSpace    = THREE.SRGBColorSpace;
@@ -90,12 +90,23 @@ function animate() {
 }
 animate();
 
-// ── Handle window resize ──────────────────────────────────────
-window.addEventListener('resize', function () {
-  renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-  camera.aspect = wrap.clientWidth / wrap.clientHeight;
+// ── Handle resizing (window + layout changes) ───────────────
+function syncRendererToWrap() {
+  if (!wrap) return;
+
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  if (w === 0 || h === 0) return;
+
+  renderer.setSize(w, h, false); // don't change CSS size; avoid extra recalcs
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
-});
+}
+
+// Real browser resizes
+window.addEventListener('resize', syncRendererToWrap);
+
+
 
 // ── Model container ───────────────────────────────────────────
 // All loaded models go inside this group for easy clearing.
