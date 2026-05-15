@@ -240,10 +240,14 @@ var HOTSPOT_DEFS = [
 var hotspots = [];
 var currentHotspotKey = null;
 
+// ── Hotspots visibility toggle ─────────────────────────────
+var hotspotsVisible = true;
+
 // ── RAYCASTING: click on model to detect zone ─────────────────
 const raycaster = new THREE.Raycaster();
 
 const mouse     = new THREE.Vector2();
+
 
 // NOTE: Click-on-model raycasting removed.
 // Hotspots handle opening/closing the part panel.
@@ -389,8 +393,7 @@ function setupHotspots() {
       '<div class="hotspot-ring">' +
         '<div class="hotspot-pulse"></div>' +
         '<div class="hotspot-dot"></div>' +
-      '</div>' +
-      '<div class="hotspot-label">' + def.label + '</div>';
+      '</div>';
 
     el.addEventListener('click', (function(key) {
       return function(e) {
@@ -756,8 +759,22 @@ document.getElementById('sl-sun').addEventListener('input', function () {
 });
 
 // ── Toolbar: Load new file ────────────────────────────────────
+document.getElementById('btn-hs').addEventListener('click', function () {
+  hotspotsVisible = !hotspotsVisible;
+  this.classList.toggle('on', hotspotsVisible === false);
+
+  if (hotspots && hotspots.length) {
+    hotspots.forEach(function (hs) {
+      hs.el.style.display = hotspotsVisible ? '' : 'none';
+      hs.el.style.pointerEvents = hotspotsVisible ? 'auto' : 'none';
+      hs.el.style.opacity = hotspotsVisible ? '1' : '0';
+    });
+  }
+});
+
 document.getElementById('btn-new').addEventListener('click', function () {
   document.getElementById('toolbar').style.display         = 'none';
+
   document.getElementById('stats').style.display           = 'none';
   document.getElementById('brightness-panel').classList.remove('show');
   document.getElementById('btn-brt').classList.remove('on');
