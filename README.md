@@ -1,5 +1,5 @@
 
-# thesis3d-viewer
+# Vertex-colord mesh of ifugao bale house scale model
 
 A web-based 3D model viewer built with HTML, CSS, and JavaScript. 
 AI assisted coding
