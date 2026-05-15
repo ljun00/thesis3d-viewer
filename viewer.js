@@ -128,10 +128,11 @@ let currentMats  = [];
 
 const PART_INFO = {
   roof: {
-    zone: 'Atep — Roof',
-    name: 'Atep (Traditional Thatched Roof)',
+    zone: 'Atop — Roof',
+    name: 'Atop (Traditional Thatched Roof)',
     desc: `The atep is the thatched roof of the Ifugao Bale, made from
-cogon grass (Imperata cylindrica) or pili leaves. The steep
+cogon grass (Imperata cylindrica) or pili leaves. These are tied over 
+woven slit bamboos and it may descend to the level of the floor. The steep
 A-frame pitch allows heavy rain to run off quickly — a practical
 design adapted to the high rainfall in the Ifugao highlands.
 The thickness of the thatch provides natural insulation against
@@ -139,7 +140,7 @@ both heat and cold.`,
     img:  '',   // ← replace with 'images/roof.jpg'
   },
   walls: {
-    zone: 'Dingding — Walls',
+    zone: 'Gaob — Wallboards',
     name: 'Dingding (Wooden Walls & Panels)',
     desc: `The walls of the Bale are constructed from wood planks,
 often from durable local hardwoods. The single room design
@@ -151,13 +152,71 @@ carved decorative elements that reflect the family\'s status.`,
   posts: {
     zone: 'Tukkod — Posts',
     name: 'Tukkod (Foundation Posts)',
-    desc: `The tukkod are massive hardwood posts that elevate the Bale
+    desc: `The tukkod are 4 massive hardwood posts that elevate the Bale
 above the ground. A characteristic feature is the wooden rat
 guard (halipan) — a disk-shaped barrier fitted around each
 post to prevent rodents from climbing into the house. The
 number and size of posts often reflects the wealth and
 prestige of the household.`,
     img:  '',   // ← replace with 'images/posts.jpg'
+  },
+  wooden_disc: {
+    zone: 'Halipan — wooden disc',
+    name: 'Halipan (Rat Guard)',
+    desc: `The halipan is a disk-shaped wooden barrier fitted around each
+    tukkod (foundation post) to prevent rodents from climbing into the
+    house. It is typically made from a single piece of wood, carved
+    with a central hole to fit around the post. The halipan is an
+    essential functional element of the Bale, reflecting the practical
+    ingenuity of Ifugao architecture.`,
+    img:  '',   // ← replace with 'images/posts.jpg'
+  },
+  floor_beams: {
+    zone: 'Mundilig — Side Floor Beams',
+    name: 'Mundilig (Side Floor Beams)',
+    desc: `The mundilig are the two outer horizontal beams that support the floor
+    of the Bale. They are typically made from strong, durable wood and
+    are carefully crafted to distribute weight evenly across the structure.
+    It is where the posts and wallboards are mortized and they have right angled
+    grooves for attaching the floorboards.`,
+    img:  '',   // ← replace with 'images/posts.jpg'
+  },
+  central_floor_beam: {
+    zone: 'Gawaan — central_floor_beam',
+    name: 'Gawaan (Central Floor Beam)',
+    desc: `The gawaan is the central horizontal beam that supports the floor
+    of the Bale. Both sides of the center floor beams have right angled
+    grooves for attaching the floorboards.`,
+    img:  '',   // ← replace with 'images/posts.jpg'
+  },
+  door: { 
+    zone: 'Panto — Door',
+    name: 'Panto (Main Entrance)',
+    desc: `The panto is the main entrance to the Bale, typically a,
+narrow doorway on the front wall. It is often accessed via a small wooden ladder. 
+The door may be ornately carved, symbolizing
+protection and the family\'s connection to their ancestors. In some
+cases, the door is positioned on the side wall instead of the front.`,
+    img:  '',   // ← replace with 'images/door.jpg'
+  },
+  ladder: { 
+    zone: 'Teteh — ladder',
+    name: 'Teteh (Ladder)',
+    desc: `The teteh is a small wooden or bamboo ladder used to access the
+    main entrance of the Bale. It is typically placed against the 
+    front wall and may be ornately carved, symbolizing the family\'s 
+    connection to their ancestors. For the safety of the occupants, 
+    the ladder is pulled inside at night.`,
+    img:  '',   // ← replace with 'images/door.jpg'
+  },
+  transverse_girders: { 
+    zone: 'Kuling — Transverse Girders',
+    name: 'Kuling (Transverse Girders)',
+    desc: `Two transverse girders run across the width of the Bale,
+    attached at the front and rear posts. They support the two floor 
+    beams and center floor joists. The top suface is flat and the 
+    base is rounded`,
+    img:  '',   // ← replace with 'images/door.jpg'
   },
 };
 
@@ -167,9 +226,15 @@ prestige of the household.`,
 // Adjust these numbers if labels don't appear in the right spot.
 
 var HOTSPOT_DEFS = [
-  { key: 'roof',  label: '▲  Atep · Roof',   yFrac: 0.90, xFrac:  0.0, zFrac:  0.2 },
-  { key: 'walls', label: '◈  Dingding · Walls', yFrac: 0.52, xFrac:  0.4, zFrac:  0.3 },
-  { key: 'posts', label: '●  Tukkod · Posts', yFrac: 0.10, xFrac: -0.3, zFrac:  0.4 },
+  { key: 'roof',  label: '▲  Atop · Roof',   yFrac: 0.80, xFrac:  0.0, zFrac:  0.2 },
+  { key: 'walls', label: '◈  Gaob · Walls', yFrac: 0.35, xFrac:  0.1, zFrac:  0.2},
+  { key: 'posts', label: '●  Tukudd · Posts', yFrac: 0.10, xFrac: 0.15, zFrac:  0.15 },
+  { key: 'wooden_disc', label: '●  Halipan · wooden disc', yFrac: 0.15, xFrac: -0.15, zFrac:  0.15 },
+  { key: 'floor_beams', label: '●  Mundilig · Floor Beams', yFrac: 0.25, xFrac: -0.25, zFrac:  0.25 },
+  { key: 'central_floor_beam', label: '●  Gawaan · Central Floor Beam', yFrac: 0.25, xFrac: -0.25, zFrac:  0.0 },
+  { key: 'ladder', label: '●  Teteh · Ladder', yFrac: 0.10, xFrac: 0.3, zFrac:  0.0 },
+  { key: 'door', label: '●  Panto · door', yFrac: 0.30, xFrac: 0.3, zFrac:  0.0},
+  { key: 'transverse_girders', label: '●  Kuling · Transverse Girders', yFrac: 0.20, xFrac: 0.25, zFrac:  0.25 },
 ];
 
 var hotspots = [];
