@@ -59,6 +59,11 @@ body {
   gap: 12px;
   flex-shrink: 0;
 }
+.about-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
 
 #panel-toggle {
   width: 32px; height: 32px;
@@ -320,7 +325,7 @@ body {
 
 /* ── BOTTOM STATS BAR ──────────────────────────────────────── */
 #stats {
-  position: absolute; bottom: 0; left: 0; right: 0;
+  position: absolute; bottom: 0; left: 20; right: 0;;
   padding: 10px 20px; display: none; gap: 20px;
   flex-wrap: wrap; align-items: center;
   background: linear-gradient(transparent, rgba(10,12,11,0.96));
