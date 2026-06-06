@@ -1153,12 +1153,12 @@ function placeHumanFigure() {
   var result = createHumanSilhouette();
   humanGroup = result.group;
 
-  // Stand to the right of the model with a small gap
+  // Stand to the right of the model with a small gap, position of the human dummy
   var bbox = new THREE.Box3().setFromObject(modelGroup);
   var center = bbox.getCenter(new THREE.Vector3());
   var gap = result.height * 0.4;
 
-  humanGroup.position.set(bbox.max.x + gap, 0, center.z);
+  humanGroup.position.set(bbox.max.x + gap, 0, center.z + result.height * 0.2);
   scene.add(humanGroup);
 }
 
