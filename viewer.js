@@ -596,7 +596,10 @@ function showModel(root, fileName, fileSize, fmt) {
   document.getElementById('btn-wf').classList.remove('on');
   document.getElementById('btn-clr').classList.remove('on');
   setupHotspots();
+
+  if (humanVisible) placeHumanFigure();
 }
+
 
 // ── Parse a GLB / GLTF file ───────────────────────────────────
 function parseGLB(arrayBuffer) {
@@ -783,11 +786,74 @@ document.getElementById('file-input').addEventListener('change', function (e) {
   if (e.target.files[0]) loadFile(e.target.files[0]);
 });
 
-// ── Toolbar: Left panel toggle ────────────────────────────────
+// ── PANEL TOGGLE + MOBILE SIDEBAR ────────────────────────────────
+
+// Create the backdrop element dynamically — no HTML changes needed
+var backdrop = document.createElement('div');
+backdrop.id = 'panel-backdrop';
+document.body.appendChild(backdrop);
+
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
+function openSidebar() {
+  document.getElementById('info-panel').classList.remove('collapsed');
+  // Show backdrop only on mobile
+  if (isMobile()) backdrop.classList.add('visible');
+}
+
+function closeSidebar() {
+  document.getElementById('info-panel').classList.add('collapsed');
+  backdrop.classList.remove('visible');
+
+  // On desktop, resize Three.js after the CSS transition finishes
+  if (!isMobile()) {
+    setTimeout(function () {
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      camera.aspect = wrap.clientWidth / wrap.clientHeight;
+      camera.updateProjectionMatrix();
+    }, 320);
+  }
+}
+
+// Panel toggle button
 document.getElementById('panel-toggle').addEventListener('click', function () {
-  var panel = document.getElementById('info-panel');
-  panel.classList.toggle('collapsed');
+  var isCollapsed = document.getElementById('info-panel').classList.contains('collapsed');
+  if (isCollapsed) {
+    openSidebar();
+  } else {
+    closeSidebar();
+  }
 });
+
+// Tapping the backdrop closes the panel
+backdrop.addEventListener('click', closeSidebar);
+
+// ── Auto-collapse on mobile at page load ──────────────────────────
+if (isMobile()) {
+  document.getElementById('info-panel').classList.add('collapsed');
+}
+
+// ── Handle screen resize ──────────────────────────────────────────
+window.addEventListener('resize', function () {
+  if (isMobile()) {
+    // Screen got smaller — collapse and hide backdrop
+    document.getElementById('info-panel').classList.add('collapsed');
+    backdrop.classList.remove('visible');
+  } else {
+    // Screen got larger — expand sidebar, resize Three.js
+    document.getElementById('info-panel').classList.remove('collapsed');
+    backdrop.classList.remove('visible');
+
+    setTimeout(function () {
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+      camera.aspect = wrap.clientWidth / wrap.clientHeight;
+      camera.updateProjectionMatrix();
+    }, 50);
+  }
+});
+
 
 
 
@@ -931,3 +997,196 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { t.classList.remove('show'); }, 3500);
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  §  HUMAN SCALE REFERENCE
+//  Shows a human silhouette next to the model so viewers can
+//  understand the real-world size of the Ifugao Bale house.
+// ════════════════════════════════════════════════════════════════
+
+// ── Configuration ───────────────────────────────────────────────
+// Set MODEL_REAL_HEIGHT_M to the real height of the actual Bale
+// house in meters (ground to roof ridge). This controls how tall
+// the human figure appears relative to the house.
+// Typical Ifugao Bale ridge height: 5.5 – 7 m
+var HUMAN_REAL_HEIGHT_M = 1.7;  // average adult height in meters
+var MODEL_REAL_HEIGHT_M = 6.0;  // ← adjust to match the real house
+
+var humanGroup = null;
+var humanVisible = false;
+
+// ── Text label sprite ────────────────────────────────────────────
+function makeTextSprite(message) {
+  var canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 96;
+  var ctx = canvas.getContext('2d');
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = 'bold 40px Courier New';
+  ctx.fillStyle = '#4ec98a';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(message, 128, 48);
+
+  var tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+
+  return new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })
+  );
+}
+
+// ── Build the figure ─────────────────────────────────────────────
+// Uses CylinderGeometry and SphereGeometry only — no CapsuleGeometry.
+// The figure height is computed from the real-world scale constants above.
+function createHumanSilhouette() {
+  var group = new THREE.Group();
+
+  // Model is normalised to 2 units max dimension.
+  // figure height (units) = (human metres / house metres) × 2
+  var h = (HUMAN_REAL_HEIGHT_M / MODEL_REAL_HEIGHT_M) * 2;
+  var r = h * 0.065; // base radius — everything scales from this
+
+  var mat = new THREE.MeshStandardMaterial({
+    color: 0x1e2d3d, // dark navy silhouette
+    roughness: 1.0,
+    metalness: 0.0,
+  });
+
+  // ── Legs ────────────────────────────────────────────────────────
+  var legH = h * 0.46;
+  var legGeo = new THREE.CylinderGeometry(r * 0.55, r * 0.48, legH, 7);
+  var lLeg = new THREE.Mesh(legGeo, mat);
+  var rLeg = new THREE.Mesh(legGeo, mat);
+  lLeg.position.set(-r * 0.65, legH / 2, 0);
+  rLeg.position.set(r * 0.65, legH / 2, 0);
+  group.add(lLeg, rLeg);
+
+  // ── Torso ───────────────────────────────────────────────────────
+  var torsoH = h * 0.35;
+  var torsoGeo = new THREE.CylinderGeometry(r * 0.85, r * 0.95, torsoH, 8);
+  var torso = new THREE.Mesh(torsoGeo, mat);
+  torso.position.y = legH + torsoH / 2;
+  group.add(torso);
+
+  // ── Arms ────────────────────────────────────────────────────────
+  var armH = h * 0.30;
+  var armGeo = new THREE.CylinderGeometry(r * 0.35, r * 0.30, armH, 6);
+  var lArm = new THREE.Mesh(armGeo, mat);
+  var rArm = new THREE.Mesh(armGeo, mat);
+  lArm.rotation.z = 0.25; // slight outward angle
+  rArm.rotation.z = -0.25;
+  var armY = legH + torsoH * 0.75;
+  lArm.position.set(-r * 1.55, armY, 0);
+  rArm.position.set(r * 1.55, armY, 0);
+  group.add(lArm, rArm);
+
+  // ── Neck ────────────────────────────────────────────────────────
+  var neckH = h * 0.045;
+  var headR = h * 0.09;
+  var neckGeo = new THREE.CylinderGeometry(headR * 0.42, headR * 0.48, neckH, 8);
+  var neck = new THREE.Mesh(neckGeo, mat);
+  neck.position.y = legH + torsoH + neckH / 2;
+  group.add(neck);
+
+  // ── Head ────────────────────────────────────────────────────────
+  var headGeo = new THREE.SphereGeometry(headR, 12, 8);
+  var headMesh = new THREE.Mesh(headGeo, mat);
+  headMesh.position.y = legH + torsoH + neckH + headR;
+  group.add(headMesh);
+
+  // ── Ground shadow disc ─────────────────────────────────────────
+  var shadowGeo = new THREE.CircleGeometry(r * 1.3, 16);
+  var shadowMat = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.25,
+  });
+  var shadowDisc = new THREE.Mesh(shadowGeo, shadowMat);
+  shadowDisc.rotation.x = -Math.PI / 2;
+  shadowDisc.position.y = 0.002; // just above grid to avoid z-fighting
+  group.add(shadowDisc);
+
+  // ── Height measurement line ─────────────────────────────────────
+  var lineMat = new THREE.LineBasicMaterial({ color: 0x4ec98a });
+
+  // Vertical bar
+  var vLine = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-r * 3.2, 0, 0),
+    new THREE.Vector3(-r * 3.2, h, 0),
+  ]);
+  group.add(new THREE.Line(vLine, lineMat));
+
+  // Top tick
+  var topTick = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-r * 3.9, h, 0),
+    new THREE.Vector3(-r * 2.5, h, 0),
+  ]);
+  group.add(new THREE.Line(topTick, lineMat));
+
+  // Bottom tick
+  var botTick = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-r * 3.9, 0, 0),
+    new THREE.Vector3(-r * 2.5, 0, 0),
+  ]);
+  group.add(new THREE.Line(botTick, lineMat));
+
+  // Label
+  var label = makeTextSprite('≈ ' + HUMAN_REAL_HEIGHT_M + 'm');
+  label.scale.set(r * 8, r * 3, 1);
+  label.position.set(-r * 7.5, h / 2, 0);
+  group.add(label);
+
+  return { group: group, height: h };
+}
+
+// ── Position figure beside the loaded model ──────────────────────
+function placeHumanFigure() {
+  if (!currentModel) return;
+
+  if (humanGroup) {
+    scene.remove(humanGroup);
+    humanGroup = null;
+  }
+
+  var result = createHumanSilhouette();
+  humanGroup = result.group;
+
+  // Stand to the right of the model with a small gap
+  var bbox = new THREE.Box3().setFromObject(modelGroup);
+  var center = bbox.getCenter(new THREE.Vector3());
+  var gap = result.height * 0.4;
+
+  humanGroup.position.set(bbox.max.x + gap, 0, center.z);
+  scene.add(humanGroup);
+}
+
+// ── Toggle button ────────────────────────────────────────────────
+var humanBtn = document.getElementById('btn-human');
+if (humanBtn) {
+  humanBtn.addEventListener('click', function () {
+    if (!currentModel) {
+      showToast('Load a model first');
+      return;
+    }
+
+    humanVisible = !humanVisible;
+
+    if (humanVisible) {
+      placeHumanFigure();
+      if (humanGroup) humanGroup.visible = true;
+      showToast('Human scale reference: ON  (≈ 1.7 m)');
+    } else {
+      if (humanGroup) humanGroup.visible = false;
+    }
+
+    this.classList.toggle('on', humanVisible);
+  });
+}
+
+// ── Recreate when a new model loads ───────────────────────────────
+// Add one line inside your showModel() function:
+//   if (humanVisible) placeHumanFigure();
+
+

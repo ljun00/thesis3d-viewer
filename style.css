@@ -347,6 +347,55 @@ body {
 }
 #toast.show { opacity: 1; }
 
+/* ── MOBILE SIDEBAR ─────────────────────────────────────────────
+   On small screens the sidebar overlays the viewer instead of
+   pushing it. A backdrop dims the viewer behind the open panel. */
+
+#panel-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 40;
+  cursor: pointer;
+}
+
+#panel-backdrop.visible { display: block; }
+
+@media (max-width: 768px) {
+
+  /* Panel becomes a fixed overlay instead of a flex child */
+  #info-panel {
+    position: fixed !important;
+    top: 80px;           /* same as header height */
+    left: 0;
+    bottom: 0;
+    width: 290px !important;
+    min-width: 290px !important;
+    z-index: 50;
+    /* Switch from width-based to transform-based animation */
+    transform: translateX(0);
+    transition: transform 0.3s ease !important;
+    opacity: 1 !important;
+  }
+
+  /* Collapsed on mobile = slide out to the left */
+  #info-panel.collapsed {
+    width: 290px !important;
+    min-width: 290px !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    transform: translateX(-100%) !important;
+  }
+
+  /* When panel is open on mobile, wrap takes full width (no gap) */
+  #wrap {
+    width: 100% !important;
+    flex: 1 !important;
+  }
+}
+
+
 /* ── FILE INPUT ────────────────────────────────────────────── */
 #file-input { display: none; }
 
