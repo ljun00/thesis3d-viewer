@@ -1,10 +1,12 @@
-# TODO — Sidebar stretch fix
+# TODO — Fix images + notes + carousel
 
-- [x] Inspect `viewer.js` resize logic and identify best insertion point.
-- [x] Add a dedicated resize sync function (renderer size + camera aspect + updateProjectionMatrix).
-- [x] Keep existing `window.resize` handler but route it through the sync function.
-- [x] Add a `ResizeObserver` watching `#wrap` to call the sync function when layout size changes due to sidebar collapse/expand.
-- [x] (Optional) Debounce resize calls (via `requestAnimationFrame`) to avoid repeated updates during transitions.
-- [ ] Verify: toggle sidebar closed/open; confirm model is not stretched.
-
+- [x] Remove notes area from thesis-viewer.html (delete #part-notes block).
+- [x] Remove notes CSS rules from style.css (.part-notes/.notes-title/.notes-body).
+- [x] Replace showPartPanel image logic with a working carousel implementation.
+- [x] Add img.onerror placeholder that prints the broken path so missing images are obvious.
+- [x] Update PART_INFO image paths to match local Git filenames exactly (case-sensitive).
+- [ ] Verify Git images folder contents:
+  - Ensure images/* files are committed and pushed to GitHub.
+  - Ensure filenames match code exactly (roof_1.jpg vs roof-1.jpg etc.).
+- [ ] Run local check in browser console (F12) for missing carousel functions/DOM errors.
 

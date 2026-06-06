@@ -130,6 +130,7 @@ const PART_INFO = {
   roof: {
     zone: 'Atop — Roof',
     name: 'Atop (Traditional Thatched Roof)',
+
     desc: `The atep is the thatched roof of the Ifugao Bale, made from
 cogon grass (Imperata cylindrica) or pili leaves. These are tied over 
 woven slit bamboos and it may descend to the level of the floor. The steep
@@ -137,7 +138,8 @@ A-frame pitch allows heavy rain to run off quickly — a practical
 design adapted to the high rainfall in the Ifugao highlands.
 The thickness of the thatch provides natural insulation against
 both heat and cold.`,
-    img:  '',   // ← replace with 'images/roof.jpg'
+    img:  'images/roof_1.jpg',   // matches filename exactly (case-sensitive on GitHub Pages)
+
   },
   walls: {
     zone: 'Gaob — Wallboards',
@@ -158,7 +160,8 @@ guard (halipan) — a disk-shaped barrier fitted around each
 post to prevent rodents from climbing into the house. The
 number and size of posts often reflects the wealth and
 prestige of the household.`,
-    img:  '',   // ← replace with 'images/posts.jpg'
+    img:  'images/tukkud_1.jpg',   // matches filename exactly
+
   },
   wooden_disc: {
     zone: 'Halipan — wooden disc',
@@ -273,22 +276,113 @@ function showPartPanel(info) {
   if (nameEl) nameEl.textContent = info.name;
   if (descEl) descEl.textContent = info.desc;
 
-  var img = document.getElementById('part-img');
-  var ph  = document.getElementById('part-placeholder');
+  // Update image carousel (single-image fallback)
+  var carouselTrack = document.getElementById('carousel-track');
+  var carouselDots  = document.getElementById('carousel-dots');
+  var carouselCount = document.getElementById('carousel-count');
 
-  if (info.img) {
-    if (img) {
-      img.src = info.img;
-      img.style.display = 'block';
-    }
-    if (ph) ph.style.display = 'none';
+  if (!carouselTrack || !carouselDots || !carouselCount) {
+    console.warn('Carousel elements missing in DOM');
+    panel.classList.remove('hidden');
+    return;
+  }
+
+  // Treat info.img as the carousel source(s)
+  var carouselImages = [];
+  if (info.img) carouselImages = [info.img];
+
+  carouselTrack.innerHTML = '';
+  carouselDots.innerHTML  = '';
+
+  function goToSlide(idx) {
+    var slides = carouselTrack.children;
+    if (!slides || !slides.length) return;
+    carouselTrack.style.transform = 'translateX(' + (-idx * 100) + '%)';
+
+    // Update dots
+    Array.prototype.forEach.call(carouselDots.children, function(dot, i) {
+      dot.classList.toggle('active', i === idx);
+    });
+
+    carouselCount.textContent = (idx + 1) + ' / ' + slides.length;
+  }
+
+  // Hide buttons if only 1 slide
+  var prevBtn = document.getElementById('carousel-prev');
+  var nextBtn = document.getElementById('carousel-next');
+  if (carouselImages.length <= 1) {
+    if (prevBtn) prevBtn.classList.add('hidden');
+    if (nextBtn) nextBtn.classList.add('hidden');
   } else {
-    if (img) img.style.display = 'none';
-    if (ph) ph.style.display = 'flex';
+    if (prevBtn) prevBtn.classList.remove('hidden');
+    if (nextBtn) nextBtn.classList.remove('hidden');
+  }
+
+  // Hook prev/next each time we open a panel (simple + avoids stale closures)
+  if (prevBtn) prevBtn.onclick = function() {
+    var active = carouselDots.querySelector('.carousel-dot.active');
+    var idx = active ? Array.prototype.indexOf.call(carouselDots.children, active) : 0;
+    idx = Math.max(0, idx - 1);
+    goToSlide(idx);
+  };
+  if (nextBtn) nextBtn.onclick = function() {
+    var active = carouselDots.querySelector('.carousel-dot.active');
+    var idx = active ? Array.prototype.indexOf.call(carouselDots.children, active) : 0;
+    idx = Math.min(carouselImages.length - 1, idx + 1);
+    goToSlide(idx);
+  };
+
+  // Build one slide per image
+  carouselImages.forEach(function(src, i) {
+    var slide = document.createElement('div');
+    slide.className = 'carousel-slide';
+
+    var img = document.createElement('img');
+    img.alt = 'Photo ' + (i + 1);
+
+    img.onerror = function() {
+      slide.innerHTML =
+        '<div class="carousel-placeholder">' +
+          '<span>⚠</span>' +
+          '<span>Image not found:<br>' + src + '</span>' +
+        '</div>';
+    };
+
+    img.src = src;
+    slide.appendChild(img);
+    carouselTrack.appendChild(slide);
+
+    var dot = document.createElement('div');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', (function(idx) {
+      return function() { goToSlide(idx); };
+    })(i));
+    carouselDots.appendChild(dot);
+  });
+
+  if (carouselImages.length === 0) {
+    // No image: show placeholder slide
+    var slide = document.createElement('div');
+    slide.className = 'carousel-slide';
+    slide.innerHTML =
+      '<div class="carousel-placeholder">' +
+        '<span>⚠</span>' +
+        '<span>No image set for this part</span>' +
+      '</div>';
+    carouselTrack.appendChild(slide);
+    carouselCount.textContent = '0 / 0';
+    var dot = document.createElement('div');
+    dot.className = 'carousel-dot active';
+    carouselDots.appendChild(dot);
+    if (prevBtn) prevBtn.classList.add('hidden');
+    if (nextBtn) nextBtn.classList.add('hidden');
+  } else {
+    goToSlide(0);
   }
 
   panel.classList.remove('hidden');
 }
+
 
 
 function closePartPanel() {
