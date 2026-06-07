@@ -117,20 +117,11 @@ let currentModel = null;
 let currentMats  = [];
 
 // ── PART INFO DATA ────────────────────────────────────────────
-// Height zones: when you click the model, we check the Y position
-// of the click as a % of the total model height:
-//   Top 35%    → Roof  (Atep)
-//   Middle 40% → Walls (Dingding)
-//   Bottom 25% → Posts (Tukkod)
-//
-// To add your actual photo, put the image file in an "images/" folder
-// and replace the empty src "" with "images/roof.jpg" etc.
 
 const PART_INFO = {
   roof: {
     zone: 'Atop — Roof',
     name: 'Atop (Traditional Thatched Roof)',
-
     desc: `The atep is the thatched roof of the Ifugao Bale, made from
 cogon grass (Imperata cylindrica) or pili leaves. These are tied over 
 woven slit bamboos and it may descend to the level of the floor. The steep
@@ -442,6 +433,35 @@ function fitCamera(root) {
   controls.target.copy(bctr);
   controls.update();
 }
+
+// Set camera to a consistent "front" view.
+// This keeps the fit distance/target, but rotates around the model center.
+function setCameraToFront(root) {
+  if (!root) return;
+
+  var box   = new THREE.Box3().setFromObject(root);
+  var bsize = box.getSize(new THREE.Vector3()).length();
+  var bctr  = box.getCenter(new THREE.Vector3());
+
+  camera.near = bsize / 100;
+  camera.far  = bsize * 100;
+  camera.updateProjectionMatrix();
+
+  var dist   = bsize * 1.6;
+  var height = bsize * 0.3;
+
+  controls.target.copy(bctr);
+
+  // +Math.PI/2 rotates camera to the right.
+  // If it goes the wrong way, switch to -Math.PI/2.
+  var yaw = Math.PI / 2;
+
+  var pos = new THREE.Vector3(0, height, dist);
+  pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+  camera.position.copy(bctr).add(pos);
+  controls.update();
+}
+
 
 // ── Count vertices and faces across all meshes ────────────────
 function getModelStats(root) {
@@ -871,8 +891,9 @@ document.getElementById('btn-wf').addEventListener('click', function () {
 // ── Toolbar: Reset camera ─────────────────────────────────────
 document.getElementById('btn-cam').addEventListener('click', function () {
   if (!currentModel) return;
-  fitCamera(currentModel);
+  setCameraToFront(currentModel);
 });
+
 
 // ── Toolbar: Color toggle ─────────────────────────────────────
 var showingOriginal = true;
