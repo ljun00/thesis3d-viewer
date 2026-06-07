@@ -434,8 +434,6 @@ function fitCamera(root) {
   controls.update();
 }
 
-// Set camera to a consistent "front" view.
-// This keeps the fit distance/target, but rotates around the model center.
 function setCameraToFront(root) {
   if (!root) return;
 
@@ -448,7 +446,7 @@ function setCameraToFront(root) {
   camera.updateProjectionMatrix();
 
   var dist   = bsize * 1.6;
-  var height = bsize * 0.3;
+  var height = bsize * 0.1;
 
   controls.target.copy(bctr);
 
@@ -599,7 +597,8 @@ function showModel(root, fileName, fileSize, fmt) {
   currentModel = root;
 
   placeOnGrid(root);
-  fitCamera(root);
+  // Make the initial/default view match the "Reset View" button.
+  setCameraToFront(root);
   currentMats = collectMaterials(root);
 
   var s = getModelStats(root);
@@ -1180,6 +1179,13 @@ function placeHumanFigure() {
   var gap = result.height * 0.4;
 
   humanGroup.position.set(bbox.max.x + gap, 0, center.z + result.height * 0.2);
+
+  // Rotate dummy to face the current camera (front of camera)
+  // Assumes OrbitControls camera keeps looking at controls.target.
+  var toCamera = new THREE.Vector3().copy(camera.position).sub(humanGroup.position);
+  var yaw = Math.atan2(toCamera.x, toCamera.z); // Yaw around Y axis
+  humanGroup.rotation.set(0, yaw, 0);
+
   scene.add(humanGroup);
 }
 
