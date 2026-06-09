@@ -1196,7 +1196,7 @@ function createHumanSilhouette() {
   var r = h * 0.065; // base radius — everything scales from this
 
   var mat = new THREE.MeshStandardMaterial({
-    color: 0x1e2d3d, // dark navy silhouette
+    color: 0xD0D0D0, // light gray silhouette
     roughness: 1.0,
     metalness: 0.0,
   });
