@@ -129,7 +129,7 @@ A-frame pitch allows heavy rain to run off quickly — a practical
 design adapted to the high rainfall in the Ifugao highlands.
 The thickness of the thatch provides natural insulation against
 both heat and cold.`,
-    img:  ['images/roof_1.jpg', 'images/roof_2.png'],   // matches filename exactly (case-sensitive on GitHub Pages)
+    img:  ['images/roof_1.jpg', 'images/roof_2.png', 'images/roof_3.png'],
 
   },
   walls: {
@@ -140,7 +140,7 @@ both heat and cold.`,
 	maximises interior space while the raised floor keeps the
 	living area dry and protected from animals. Walls may feature
 	carved decorative elements that reflect the family\'s status.`,
-    img:  'images/gaob_1.png',
+    img:  ['images/gaob_1.png', 'images/gaob_2.png', 'images/gaob_3.png'],
   },
   posts: {
     zone: 'Tukkod — Posts',
@@ -151,8 +151,7 @@ both heat and cold.`,
 	post to prevent rodents from climbing into the house. The
 	number and size of posts often reflects the wealth and
 	prestige of the household.`,
-    img:  ['images/tukkud_1.jpg', 'images/tukkud_2.png'],   // matches filename exactly
-
+    img:  ['images/tukkud_1.jpg','images/tukkud_2.png'],  
   },
   wooden_disc: {
     zone: 'Halipan — wooden disc',
@@ -163,7 +162,7 @@ both heat and cold.`,
     with a central hole to fit around the post. The halipan is an
     essential functional element of the Bale, reflecting the practical
     ingenuity of Ifugao architecture.`,
-    img:  ['images/halipan_1.png', 'images/halipan_2.png'],   // no matching image provided in images/ folder
+    img:  ['images/halipan_1.png', 'images/halipan_2.png','images/halipan_3.png'],
   },
   floor_beams: {
     zone: 'Mundilig — Side Floor Beams',
@@ -173,7 +172,7 @@ both heat and cold.`,
     are carefully crafted to distribute weight evenly across the structure.
     It is where the posts and wallboards are mortized and they have right angled
     grooves for attaching the floorboards.`,
-    img:  ['images/mundilig_1.png'],
+    img:  ['images/mundilig_1.png', 'images/mundilig_2.png', 'images/mundilig_3.png'], 
   },
   central_floor_beam: {
     zone: 'Gawaan — central_floor_beam',
@@ -181,7 +180,7 @@ both heat and cold.`,
     desc: `The gawaan is the central horizontal beam that supports the floor
     of the Bale. Both sides of the center floor beams have right angled
     grooves for attaching the floorboards.`,
-    img:  ['images/gawaan_1.png'],   // no matching image provided in images/ folder
+    img:  ['images/gawaan_1.png', 'images/gawaan_2.png'], 
   },
   door: { 
     zone: 'Panto — Door',
@@ -191,7 +190,7 @@ both heat and cold.`,
 The door may be ornately carved, symbolizing
 protection and the family\'s connection to their ancestors. In some
 cases, the door is positioned on the side wall instead of the front.`,
-    img:  ['images/panto_1.png', 'images/panto_2.png'],
+    img:  ['images/panto_1.png', 'images/panto_2.png', 'images/panto_3.png', 'images/panto_4.png'],  
   },
   ladder: { 
     zone: 'Teteh — ladder',
@@ -201,7 +200,7 @@ cases, the door is positioned on the side wall instead of the front.`,
     front wall and may be ornately carved, symbolizing the family\'s 
     connection to their ancestors. For the safety of the occupants, 
     the ladder is pulled inside at night.`,
-    img:  ['images/teteh_1.png'],
+    img:  ['images/teteh_1.png','images/teteh_2.png'],
   },
   transverse_girders: { 
     zone: 'Kuling — Transverse Girders',
@@ -210,7 +209,7 @@ cases, the door is positioned on the side wall instead of the front.`,
     attached at the front and rear posts. They support the two floor 
     beams and center floor joists. The top suface is flat and the 
     base is rounded`,
-    img:  '',
+    img:  ['images/kuling_1.png','images/kuling_2.png','images/kuling_3.png', 'images/kuling_4.png'],  
   },
 
 };
@@ -218,21 +217,18 @@ cases, the door is positioned on the side wall instead of the front.`,
 
 
 // ── FLOATING 3D HOTSPOT DEFINITIONS ────────────────────────────
-// yFrac: 0.0 = bottom of model, 1.0 = top
-// xFrac/zFrac: offset from center (-0.5 to 0.5)
-// Adjust these numbers if labels don't appear in the right spot.
-
 var HOTSPOT_DEFS = [
-  { key: 'roof',  label: '▲  Atop · Roof',   yFrac: 0.80, xFrac:  0.0, zFrac:  0.2 },
-  { key: 'walls', label: '◈  Gaob · Walls', yFrac: 0.35, xFrac:  0.1, zFrac:  0.2},
-  { key: 'posts', label: '●  Tukudd · Posts', yFrac: 0.10, xFrac: 0.15, zFrac:  0.15 },
-  { key: 'wooden_disc', label: '●  Halipan · wooden disc', yFrac: 0.15, xFrac: -0.15, zFrac:  0.15 },
-  { key: 'floor_beams', label: '●  Mundilig · Floor Beams', yFrac: 0.25, xFrac: -0.25, zFrac:  0.25 },
-  { key: 'central_floor_beam', label: '●  Gawaan · Central Floor Beam', yFrac: 0.25, xFrac: -0.25, zFrac:  0.0 },
-  { key: 'ladder', label: '●  Teteh · Ladder', yFrac: 0.10, xFrac: 0.3, zFrac:  0.0 },
-  { key: 'door', label: '●  Panto · door', yFrac: 0.30, xFrac: 0.3, zFrac:  0.0},
-  { key: 'transverse_girders', label: '●  Kuling · Transverse Girders', yFrac: 0.20, xFrac: 0.25, zFrac:  0.25 },
+  { key: 'roof',  label: '▲  Atop',   yFrac: 0.80, xFrac:  0.0, zFrac:  0.2 },
+  { key: 'walls', label: '◈  Gaob', yFrac: 0.35, xFrac:  0.1, zFrac:  0.2},
+  { key: 'posts', label: '●  Tukkud', yFrac: 0.10, xFrac: 0.15, zFrac:  0.15 },
+  { key: 'wooden_disc', label: '●  Halipan', yFrac: 0.15, xFrac: -0.15, zFrac:  0.15 },
+  { key: 'floor_beams', label: '●  Mundilig', yFrac: 0.25, xFrac: -0.25, zFrac:  0.25 },
+  { key: 'central_floor_beam', label: '●  Gawaan', yFrac: 0.25, xFrac: -0.25, zFrac:  0.0 },
+  { key: 'ladder', label: '●  Teteh', yFrac: 0.10, xFrac: 0.3, zFrac:  0.0 },
+  { key: 'door', label: '●  Panto', yFrac: 0.30, xFrac: 0.3, zFrac:  0.0},
+  { key: 'transverse_girders', label: '●  Kuling', yFrac: 0.20, xFrac: 0.25, zFrac:  0.25 },
 ];
+
 
 var hotspots = [];
 var currentHotspotKey = null;
@@ -494,7 +490,6 @@ function setupHotspots() {
   bbox.getSize(size);
 
   HOTSPOT_DEFS.forEach(function(def) {
-    // Calculate world position from fractions of the bounding box
     var worldPos = new THREE.Vector3(
       bbox.min.x + size.x * (0.5 + def.xFrac),
       bbox.min.y + size.y * def.yFrac,
@@ -505,11 +500,20 @@ function setupHotspots() {
     var el = document.createElement('div');
     el.className = 'hotspot';
     el.dataset.key = def.key;
+    // Show ONLY the first label part on the hotspot (e.g., "Atop", "Tukkud").
+    var partName = (def.label !== undefined && def.label !== null) ? def.label : def.key;
+    //for the full details use this
+    // var partName = (PART_INFO[def.key] && PART_INFO[def.key].name) ? PART_INFO[def.key].name : def.label;
+
     el.innerHTML =
       '<div class="hotspot-ring">' +
         '<div class="hotspot-pulse"></div>' +
         '<div class="hotspot-dot"></div>' +
+      '</div>'+
+      '<div class="hotspot-label">' + partName + '</div>';
       '</div>';
+
+
 
     el.addEventListener('click', (function(key) {
       return function(e) {
