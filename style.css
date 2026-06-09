@@ -521,7 +521,14 @@ body {
   display: flex; align-items: center; justify-content: center;
   background: var(--header-bg);
 }
-.carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  /* keep full resolution + reduce cropping */
+  object-fit: contain;
+  object-position: center;
+  image-rendering: auto;
+}
 
 .carousel-placeholder {
   display: flex; flex-direction: column;

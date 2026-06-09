@@ -129,29 +129,29 @@ A-frame pitch allows heavy rain to run off quickly — a practical
 design adapted to the high rainfall in the Ifugao highlands.
 The thickness of the thatch provides natural insulation against
 both heat and cold.`,
-    img:  'images/roof_1.jpg',   // matches filename exactly (case-sensitive on GitHub Pages)
+    img:  ['images/roof_1.jpg', 'images/roof_2.png'],   // matches filename exactly (case-sensitive on GitHub Pages)
 
   },
   walls: {
     zone: 'Gaob — Wallboards',
     name: 'Dingding (Wooden Walls & Panels)',
     desc: `The walls of the Bale are constructed from wood planks,
-often from durable local hardwoods. The single room design
-maximises interior space while the raised floor keeps the
-living area dry and protected from animals. Walls may feature
-carved decorative elements that reflect the family\'s status.`,
-    img:  '',   // ← replace with 'images/walls.jpg'
+	often from durable local hardwoods. The single room design
+	maximises interior space while the raised floor keeps the
+	living area dry and protected from animals. Walls may feature
+	carved decorative elements that reflect the family\'s status.`,
+    img:  'images/gaob_1.png',
   },
   posts: {
     zone: 'Tukkod — Posts',
     name: 'Tukkod (Foundation Posts)',
     desc: `The tukkod are 4 massive hardwood posts that elevate the Bale
-above the ground. A characteristic feature is the wooden rat
-guard (halipan) — a disk-shaped barrier fitted around each
-post to prevent rodents from climbing into the house. The
-number and size of posts often reflects the wealth and
-prestige of the household.`,
-    img:  'images/tukkud_1.jpg',   // matches filename exactly
+	above the ground. A characteristic feature is the wooden rat
+	guard (halipan) — a disk-shaped barrier fitted around each
+	post to prevent rodents from climbing into the house. The
+	number and size of posts often reflects the wealth and
+	prestige of the household.`,
+    img:  ['images/tukkud_1.jpg', 'images/tukkud_2.png'],   // matches filename exactly
 
   },
   wooden_disc: {
@@ -163,7 +163,7 @@ prestige of the household.`,
     with a central hole to fit around the post. The halipan is an
     essential functional element of the Bale, reflecting the practical
     ingenuity of Ifugao architecture.`,
-    img:  '',   // ← replace with 'images/posts.jpg'
+    img:  ['images/halipan_1.png', 'images/halipan_2.png'],   // no matching image provided in images/ folder
   },
   floor_beams: {
     zone: 'Mundilig — Side Floor Beams',
@@ -173,7 +173,7 @@ prestige of the household.`,
     are carefully crafted to distribute weight evenly across the structure.
     It is where the posts and wallboards are mortized and they have right angled
     grooves for attaching the floorboards.`,
-    img:  '',   // ← replace with 'images/posts.jpg'
+    img:  ['images/mundilig_1.png'],
   },
   central_floor_beam: {
     zone: 'Gawaan — central_floor_beam',
@@ -181,17 +181,17 @@ prestige of the household.`,
     desc: `The gawaan is the central horizontal beam that supports the floor
     of the Bale. Both sides of the center floor beams have right angled
     grooves for attaching the floorboards.`,
-    img:  '',   // ← replace with 'images/posts.jpg'
+    img:  ['images/gawaan_1.png'],   // no matching image provided in images/ folder
   },
   door: { 
     zone: 'Panto — Door',
     name: 'Panto (Main Entrance)',
     desc: `The panto is the main entrance to the Bale, typically a,
-narrow doorway on the front wall. It is often accessed via a small wooden ladder. 
+ narrow doorway on the front wall. It is often accessed via a small wooden ladder. 
 The door may be ornately carved, symbolizing
 protection and the family\'s connection to their ancestors. In some
 cases, the door is positioned on the side wall instead of the front.`,
-    img:  '',   // ← replace with 'images/door.jpg'
+    img:  ['images/panto_1.png', 'images/panto_2.png'],
   },
   ladder: { 
     zone: 'Teteh — ladder',
@@ -201,7 +201,7 @@ cases, the door is positioned on the side wall instead of the front.`,
     front wall and may be ornately carved, symbolizing the family\'s 
     connection to their ancestors. For the safety of the occupants, 
     the ladder is pulled inside at night.`,
-    img:  '',   // ← replace with 'images/door.jpg'
+    img:  ['images/teteh_1.png'],
   },
   transverse_girders: { 
     zone: 'Kuling — Transverse Girders',
@@ -210,9 +210,12 @@ cases, the door is positioned on the side wall instead of the front.`,
     attached at the front and rear posts. They support the two floor 
     beams and center floor joists. The top suface is flat and the 
     base is rounded`,
-    img:  '',   // ← replace with 'images/door.jpg'
+    img:  '',
   },
+
 };
+
+
 
 // ── FLOATING 3D HOTSPOT DEFINITIONS ────────────────────────────
 // yFrac: 0.0 = bottom of model, 1.0 = top
@@ -278,9 +281,13 @@ function showPartPanel(info) {
     return;
   }
 
-  // Treat info.img as the carousel source(s)
   var carouselImages = [];
-  if (info.img) carouselImages = [info.img];
+  if (Array.isArray(info.img)) {
+    carouselImages = info.img;
+  } else if (info.img) {
+    carouselImages = [info.img];
+  }
+
 
   carouselTrack.innerHTML = '';
   carouselDots.innerHTML  = '';
@@ -1019,15 +1026,10 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  §  HUMAN SCALE REFERENCE
-//  Shows a human silhouette next to the model so viewers can
-//  understand the real-world size of the Ifugao Bale house.
+// HUMAN SCALE REFERENCE
 // ════════════════════════════════════════════════════════════════
 
 // ── Configuration ───────────────────────────────────────────────
-// Set MODEL_REAL_HEIGHT_M to the real height of the actual Bale
-// house in meters (ground to roof ridge). This controls how tall
-// the human figure appears relative to the house.
 // Typical Ifugao Bale ridge height: 5.5 – 7 m
 var HUMAN_REAL_HEIGHT_M = 1.7;  // average adult height in meters
 var MODEL_REAL_HEIGHT_M = 6.0;  // ← adjust to match the real house
@@ -1058,8 +1060,6 @@ function makeTextSprite(message) {
 }
 
 // ── Build the figure ─────────────────────────────────────────────
-// Uses CylinderGeometry and SphereGeometry only — no CapsuleGeometry.
-// The figure height is computed from the real-world scale constants above.
 function createHumanSilhouette() {
   var group = new THREE.Group();
 
@@ -1180,8 +1180,7 @@ function placeHumanFigure() {
 
   humanGroup.position.set(bbox.max.x + gap, 0, center.z + result.height * 0.2);
 
-  // Rotate dummy to face the current camera (front of camera)
-  // Assumes OrbitControls camera keeps looking at controls.target.
+  
   var toCamera = new THREE.Vector3().copy(camera.position).sub(humanGroup.position);
   var yaw = Math.atan2(toCamera.x, toCamera.z); // Yaw around Y axis
   humanGroup.rotation.set(0, yaw, 0);
