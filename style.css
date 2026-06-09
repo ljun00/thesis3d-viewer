@@ -526,6 +526,13 @@ body {
   display: flex; align-items: center; justify-content: center;
   background: var(--header-bg);
 }
+.carousel-slide {
+  /* fixed-size bordered frame for all carousel images */
+  background: var(--header-bg);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+}
+
 .carousel-slide img {
   width: 100%;
   height: 100%;
@@ -533,7 +540,9 @@ body {
   object-fit: contain;
   object-position: center;
   image-rendering: auto;
+  display: block;
 }
+
 
 .carousel-placeholder {
   display: flex; flex-direction: column;

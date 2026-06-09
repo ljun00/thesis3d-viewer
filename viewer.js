@@ -377,7 +377,91 @@ function showPartPanel(info) {
   panel.classList.remove('hidden');
 }
 
+// ── Image zoom overlay (click to enlarge, click outside to close) ──
+(function initImageZoom() {
+  var overlay = document.createElement('div');
+  overlay.id = 'image-zoom-overlay';
+  overlay.style.cssText = [
+    'position:fixed',
+    'inset:0',
+    'background:rgba(0,0,0,0.65)',
+    'z-index:60',
+    'display:none',
+    'align-items:center',
+    'justify-content:center',
+    'padding:24px',
+  ].join(';');
 
+  var box = document.createElement('div');
+  box.style.cssText = [
+    'width: min(960px, calc(100vw - 48px))',
+    'height: min(620px, calc(88vh - 48px))',
+    'border:1px solid rgba(255,255,255,0.15)',
+    'background:rgba(12,16,14,0.97)',
+    'border-radius:8px',
+    'backdrop-filter:blur(10px)',
+    'box-shadow:0 10px 40px rgba(0,0,0,0.7)',
+    'display:flex',
+    'align-items:center',
+    'justify-content:center',
+    'overflow:hidden',
+  ].join(';');
+
+
+  var img = document.createElement('img');
+  img.alt = 'Zoomed image';
+  img.style.cssText = [
+    // Fixed panel-like sizing across all images
+    'width: min(900px, calc(100vw - 48px))',
+    'height: min(560px, calc(88vh - 48px))',
+    'max-width: none',
+    'max-height: none',
+    'object-fit: contain',
+    'display:block',
+  ].join(';');
+
+
+  box.appendChild(img);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  function open(src) {
+    if (!src) return;
+    img.src = src;
+    overlay.style.display = 'flex';
+
+    // Reset zoom each time we open
+    img.style.transform = 'scale(1)';
+    img.dataset.zoom = '1';
+  }
+
+
+  function close() {
+    overlay.style.display = 'none';
+    img.removeAttribute('src');
+  }
+
+  overlay.addEventListener('click', function (e) {
+    // Clicking backdrop closes; clicking inside box should not
+    if (e.target === overlay) close();
+  });
+
+  // Expose for use in carousel click handler
+  window.__imageZoom = { open: open, close: close, overlay: overlay, img: img };
+
+  // Delegate click from the part-panel carousel images
+  document.addEventListener('click', function (e) {
+    var target = e.target;
+    if (!target) return;
+
+    // Only react to clicks on carousel images inside #part-panel
+    if (target.tagName === 'IMG' && target.closest && target.closest('#part-panel')) {
+      // Avoid opening when user clicks carousel nav/buttons (not images)
+      var src = target.getAttribute('src');
+      if (src) open(src);
+    }
+  });
+})();
 
 function closePartPanel() {
   document.getElementById('part-panel').classList.add('hidden');
@@ -386,6 +470,7 @@ function closePartPanel() {
 
 
 document.getElementById('part-close').addEventListener('click', closePartPanel);
+
 
 // ── Collect all materials from a model ───────────────────────
 function collectMaterials(root) {
