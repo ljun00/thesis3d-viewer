@@ -431,15 +431,56 @@ function showPartPanel(info) {
     overlay.style.display = 'flex';
 
     // Reset zoom each time we open
+    img.style.transformOrigin = 'center center';
     img.style.transform = 'scale(1)';
     img.dataset.zoom = '1';
   }
-
 
   function close() {
     overlay.style.display = 'none';
     img.removeAttribute('src');
   }
+
+  function applyZoom(factor) {
+    if (!overlay || overlay.style.display === 'none') return;
+    var current = parseFloat(img.dataset.zoom || '1');
+    var next = current * factor;
+    // clamp zoom levels
+    next = Math.max(0.8, Math.min(3.0, next));
+    img.dataset.zoom = String(next);
+    img.style.transform = 'scale(' + next + ')';
+  }
+
+  // Double click/tap to zoom in, shift+double to zoom out
+  overlay.addEventListener('dblclick', function (e) {
+    e.preventDefault();
+    applyZoom(e.shiftKey ? 0.8 : 1.25);
+  });
+
+  // Mouse wheel zoom
+  overlay.addEventListener('wheel', function (e) {
+    // prevent page scrolling while zoom overlay is open
+    e.preventDefault();
+    applyZoom(e.deltaY < 0 ? 1.12 : 0.89);
+  }, { passive: false });
+
+  // Keyboard shortcuts: + / - and Escape
+  document.addEventListener('keydown', function onKey(e) {
+    if (!overlay || overlay.style.display === 'none') return;
+    if (e.key === 'Escape') {
+      close();
+      return;
+    }
+    if (e.key === '+' || e.key === '=') {
+      applyZoom(1.15);
+      return;
+    }
+    if (e.key === '-' || e.key === '_') {
+      applyZoom(0.87);
+      return;
+    }
+  });
+
 
   overlay.addEventListener('click', function (e) {
     // Clicking backdrop closes; clicking inside box should not
