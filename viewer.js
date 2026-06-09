@@ -457,8 +457,7 @@ function setCameraToFront(root) {
 
   controls.target.copy(bctr);
 
-  // +Math.PI/2 rotates camera to the right.
-  // If it goes the wrong way, switch to -Math.PI/2.
+  
   var yaw = Math.PI / 2;
 
   var pos = new THREE.Vector3(0, height, dist);
@@ -482,8 +481,6 @@ function getModelStats(root) {
   return { verts: v, faces: f };
 }
 // ── CREATE HOTSPOT ELEMENTS ─────────────────────────────────────
-// Called after a model loads. Places glowing labels at defined
-// positions on the model surface.
 function setupHotspots() {
   // Clear old hotspots
   var container = document.getElementById('hotspots-container');
